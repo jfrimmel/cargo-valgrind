@@ -1,0 +1,21 @@
+[package]
+name = "cargo-valgrind"
+version = "0.1.0"
+authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
+edition = "2018"
+description = "A cargo subcommand for running valgrind"
+repository = "https://github.com/jfrimmel/cargo-valgrind"
+readme = "README.md"
+keywords = [
+    "cargo",
+    "subcomand",
+    "cargo-subcommand",
+    "valgrind",
+    "cli",
+]
+categories = [
+    "development-tools",
+    "development-tools::cargo-plugins",
+]
+
+[dependencies]
