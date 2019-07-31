@@ -31,6 +31,19 @@ impl AsRef<Path> for Build {
     }
 }
 
+/// The possible targets to build and run within valgrind.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Target {
+    /// A normal binary with the given name.
+    Binary(String),
+    /// An example with the given name.
+    Example(String),
+    /// A benchmark with the given name.
+    Benchmark(String),
+    /// A test with the given name.
+    Test(String),
+}
+
 /// Query all binaries of the crate denoted by the given `Cargo.toml`.
 ///
 /// This function returns the paths to each executable in the given crate. Those
