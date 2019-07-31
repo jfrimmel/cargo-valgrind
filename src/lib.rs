@@ -29,8 +29,14 @@ impl AsRef<Path> for Build {
 /// are all the examples, benches as the actual crate binaries. This is based on
 /// the crate metadata obtained by [`metadata()`](fn.metadata.html).
 ///
+/// Note, that workspaces as well as plain tests currently are not supported.
+///
 /// # Errors
 /// This function fails for the same reasons as the `metadata()` function.
+///
+/// # Panics
+/// This function currently panics, if a test or custom build binary is
+/// encountered.
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
     let package = metadata(path)?;
 
@@ -55,9 +61,7 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, i
                             | metadata::Kind::DyLib
                             | metadata::Kind::CDyLib
                             | metadata::Kind::StaticLib
-                            | metadata::Kind::RLib => {
-                                unreachable!("Non-binaries are filtered out ({})", target.name)
-                            }
+                            | metadata::Kind::RLib => unreachable!("Non-binaries are filtered out"),
                         })
                         .join(target.name)
                 })
