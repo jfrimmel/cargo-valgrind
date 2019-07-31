@@ -6,7 +6,7 @@ mod tests;
 use std::{
     io,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Output},
 };
 
 /// The possible build types.
@@ -76,14 +76,11 @@ pub fn build_target<P: AsRef<Path>>(
         | Target::Benchmark(name)
         | Target::Test(name) => cmd.arg(name),
     };
-    cmd.spawn()?.wait().and_then(|status| {
-        if status.success() {
+    cmd.spawn()?.wait_with_output().and_then(|output| {
+        if output.status.success() {
             Ok(())
         } else {
-            Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Cargo finished with errors",
-            ))
+            Err(cargo_error(output))
         }
     })
 }
@@ -195,11 +192,16 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
         String::from_utf8(output.stdout)
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Non-UTF-8 string"))
     } else {
-        let msg = String::from_utf8_lossy(&output.stderr);
-        let msg = msg.trim_start_matches("error: ").trim_end();
-        Err(io::Error::new(
-            io::ErrorKind::Other,
-            format!("cargo command failed: {}", msg),
-        ))
+        Err(cargo_error(output))
     }
+}
+
+/// Build an `io::Error` from the stderr text outputted by `cargo`.
+fn cargo_error(output: Output) -> io::Error {
+    let msg = String::from_utf8_lossy(&output.stderr);
+    let msg = msg.trim_start_matches("error: ").trim_end();
+    io::Error::new(
+        io::ErrorKind::Other,
+        format!("cargo command failed: {}", msg),
+    )
 }
