@@ -22,4 +22,5 @@ categories = [
 name = "cargo-valgrind"
 path = "src/bin/main.rs"
 
-[dependencies]
+[dependencies.clap]
+version = "2.33"
