@@ -2,6 +2,7 @@
 mod metadata;
 #[cfg(test)]
 mod tests;
+mod valgrind_xml;
 
 use std::{
     ffi::OsString,
