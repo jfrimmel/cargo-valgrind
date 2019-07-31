@@ -18,7 +18,7 @@ use std::{
 pub fn binaries<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>, io::Error> {
     let package = metadata(path)?;
 
-    let target_dir = package.target_directory;
+    let target_dir = package.target_directory.join("debug");
     Ok(package
         .packages
         .into_iter()
