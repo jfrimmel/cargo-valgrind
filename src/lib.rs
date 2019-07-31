@@ -41,8 +41,23 @@ impl AsRef<Path> for Build {
 /// This function currently panics, if a test or custom build binary is
 /// encountered.
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
-    let path = path.as_ref().canonicalize()?;
     let package = metadata(&path)?;
+    binaries_from(package, path, build)
+}
+
+/// Query all binaries of given metadata.
+///
+/// See [`binaries()`](fn.binaries.html) for details.
+///
+/// This is the real implementation of the `binaries()` function. It was added
+/// in order to be able to test this function without actual `Cargo.toml`s and
+/// by giving prepared metadata.
+fn binaries_from<P: AsRef<Path>>(
+    package: metadata::Metadata,
+    requested: P,
+    build: Build,
+) -> Result<Vec<PathBuf>, io::Error> {
+    let path = requested.as_ref().canonicalize()?;
 
     let is_requested = |package: &metadata::Package| {
         package
