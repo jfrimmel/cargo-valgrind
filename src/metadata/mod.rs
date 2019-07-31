@@ -1,6 +1,7 @@
 //! A module for deserializing the cargo metadata output.
 #[cfg(test)]
 mod tests;
+mod version;
 
 use serde::Deserialize;
 use std::path::PathBuf;
@@ -10,6 +11,7 @@ use std::path::PathBuf;
 pub struct Metadata {
     pub packages: Vec<Package>,
     pub target_directory: PathBuf,
+    #[serde(deserialize_with = "version::deserialize")]
     pub version: u32,
 }
 
