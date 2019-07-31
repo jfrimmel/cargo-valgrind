@@ -4,9 +4,10 @@ mod metadata;
 mod tests;
 
 use std::{
+    ffi::OsString,
     io,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Output},
 };
 
 /// The possible build types.
@@ -29,6 +30,60 @@ impl AsRef<Path> for Build {
             Build::Release => Path::new("release"),
         }
     }
+}
+
+/// The possible targets to build and run within valgrind.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Target {
+    /// A normal binary with the given name.
+    Binary(OsString),
+    /// An example with the given name.
+    Example(OsString),
+    /// A benchmark with the given name.
+    Benchmark(OsString),
+    /// A test with the given name.
+    Test(OsString),
+}
+
+/// Invoke `cargo` and build the specified target.
+///
+/// The crate is specified by the path to the `Cargo.toml` using the `manifest`
+/// parameter. The kind of build (debug or release) is selected via the `build`
+/// parameter. The binary to build is specified via the `target` parameter.
+///
+/// # Errors
+/// This function returns an error, if the `cargo command returned an error`.
+pub fn build_target<P: AsRef<Path>>(
+    manifest: P,
+    build: Build,
+    target: Target,
+) -> Result<(), io::Error> {
+    let mut cmd = Command::new("cargo");
+    cmd.arg("build");
+    if let Build::Release = build {
+        cmd.arg("--release");
+    }
+    cmd.arg("--manifest-path");
+    cmd.arg(manifest.as_ref());
+    match target {
+        Target::Binary(_) => cmd.arg("--bin"),
+        Target::Example(_) => cmd.arg("--example"),
+        Target::Benchmark(_) => cmd.arg("--bench"),
+        Target::Test(_) => cmd.arg("--test"),
+    };
+    match target {
+        Target::Binary(name)
+        | Target::Example(name)
+        | Target::Benchmark(name)
+        | Target::Test(name) => cmd.arg(name),
+    };
+    cmd.spawn()?.wait_with_output().and_then(|output| {
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(cargo_error(output))
+        }
+    })
 }
 
 /// Query all binaries of the crate denoted by the given `Cargo.toml`.
@@ -138,11 +193,16 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
         String::from_utf8(output.stdout)
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Non-UTF-8 string"))
     } else {
-        let msg = String::from_utf8_lossy(&output.stderr);
-        let msg = msg.trim_start_matches("error: ").trim_end();
-        Err(io::Error::new(
-            io::ErrorKind::Other,
-            format!("cargo command failed: {}", msg),
-        ))
+        Err(cargo_error(output))
     }
+}
+
+/// Build an `io::Error` from the stderr text outputted by `cargo`.
+fn cargo_error(output: Output) -> io::Error {
+    let msg = String::from_utf8_lossy(&output.stderr);
+    let msg = msg.trim_start_matches("error: ").trim_end();
+    io::Error::new(
+        io::ErrorKind::Other,
+        format!("cargo command failed: {}", msg),
+    )
 }
