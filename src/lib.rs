@@ -1,5 +1,7 @@
 //! The core library of the `cargo-valgrind` command.
 mod metadata;
+#[cfg(test)]
+mod tests;
 
 use std::{
     io,
