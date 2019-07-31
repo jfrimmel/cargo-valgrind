@@ -16,8 +16,36 @@ use std::fmt::{self, Formatter};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
 #[serde(rename = "valgrindoutput")]
 pub struct Output {
+    #[serde(rename = "protocolversion")]
+    protocol_version: ProtocolVersion,
+    #[serde(rename = "protocoltool")]
+    tool: Tool,
     #[serde(rename = "error")]
     errors: Vec<Error>,
+}
+
+/// The version of the XML format.
+///
+/// Although there are also versions 1-3, there is only a variant for version 4,
+/// so that all older formats will fail. The other `struct`s in this file assume
+/// the newest protocol version.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+enum ProtocolVersion {
+    #[serde(rename = "4")]
+    Version4,
+    // other formats are not supported
+}
+
+/// The check tool used by valgrind.
+///
+/// Although there are other tools available, there is only a variant for the
+/// so-called `memcheck` tool, so that all other tools will fail. The other
+/// `struct`s in this file assume the memcheck output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+enum Tool {
+    #[serde(rename = "memcheck")]
+    MemCheck,
+    // other tools are not supported
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
