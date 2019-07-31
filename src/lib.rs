@@ -29,7 +29,10 @@ impl AsRef<Path> for Build {
 /// are all the examples, benches as the actual crate binaries. This is based on
 /// the crate metadata obtained by [`metadata()`](fn.metadata.html).
 ///
-/// Note, that workspaces as well as plain tests currently are not supported.
+/// Only binaries of the specified manifest are returned. This means, that other
+/// crates in the same workspace may have binaries, but they are ignored.
+///
+/// Note, that plain tests and `custom-build` kinds currently are not supported.
 ///
 /// # Errors
 /// This function fails for the same reasons as the `metadata()` function.
@@ -38,12 +41,22 @@ impl AsRef<Path> for Build {
 /// This function currently panics, if a test or custom build binary is
 /// encountered.
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
-    let package = metadata(path)?;
+    let path = path.as_ref().canonicalize()?;
+    let package = metadata(&path)?;
+
+    let is_requested = |package: &metadata::Package| {
+        package
+            .manifest_path
+            .canonicalize()
+            .map(|p| p == path)
+            .unwrap_or(false)
+    };
 
     let target_dir = package.target_directory.join(build);
     Ok(package
         .packages
         .into_iter()
+        .filter(is_requested)
         .flat_map(|package| {
             package
                 .targets

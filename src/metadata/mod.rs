@@ -19,6 +19,7 @@ pub struct Metadata {
 pub struct Package {
     pub id: String,
     pub targets: Vec<Target>,
+    pub manifest_path: PathBuf,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
