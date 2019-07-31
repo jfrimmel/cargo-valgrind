@@ -42,6 +42,7 @@ impl AsRef<Path> for Build {
 /// encountered.
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
     let package = metadata(&path)?;
+    let path = path.as_ref().canonicalize()?;
     binaries_from(package, path, build)
 }
 
@@ -52,26 +53,18 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, i
 /// This is the real implementation of the `binaries()` function. It was added
 /// in order to be able to test this function without actual `Cargo.toml`s and
 /// by giving prepared metadata.
+///
+/// Note, that the path denoted by `requested` has to be canonicalized before.
 fn binaries_from<P: AsRef<Path>>(
     package: metadata::Metadata,
     requested: P,
     build: Build,
 ) -> Result<Vec<PathBuf>, io::Error> {
-    let path = requested.as_ref().canonicalize()?;
-
-    let is_requested = |package: &metadata::Package| {
-        package
-            .manifest_path
-            .canonicalize()
-            .map(|p| p == path)
-            .unwrap_or(false)
-    };
-
     let target_dir = package.target_directory.join(build);
     Ok(package
         .packages
         .into_iter()
-        .filter(is_requested)
+        .filter(|package| package.manifest_path == requested.as_ref())
         .flat_map(|package| {
             package
                 .targets
