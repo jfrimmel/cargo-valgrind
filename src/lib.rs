@@ -49,7 +49,15 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, i
                             metadata::Kind::Binary => "",
                             metadata::Kind::Example => "examples",
                             metadata::Kind::Bench => "benches",
-                            metadata::Kind::Library => unreachable!(),
+                            metadata::Kind::Test | metadata::Kind::CustomBuild => unimplemented!(),
+                            metadata::Kind::Library
+                            | metadata::Kind::ProcMacro
+                            | metadata::Kind::DyLib
+                            | metadata::Kind::CDyLib
+                            | metadata::Kind::StaticLib
+                            | metadata::Kind::RLib => {
+                                unreachable!("Non-binaries are filtered out ({})", target.name)
+                            }
                         })
                         .join(target.name)
                 })

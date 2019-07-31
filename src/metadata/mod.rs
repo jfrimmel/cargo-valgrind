@@ -38,6 +38,20 @@ pub enum Kind {
     Bench,
     #[serde(rename = "lib")]
     Library,
+    #[serde(rename = "dylib")]
+    DyLib,
+    #[serde(rename = "cdylib")]
+    CDyLib,
+    #[serde(rename = "staticlib")]
+    StaticLib,
+    #[serde(rename = "rlib")]
+    RLib,
+    #[serde(rename = "test")]
+    Test,
+    #[serde(rename = "proc-macro")]
+    ProcMacro,
+    #[serde(rename = "custom-build")]
+    CustomBuild,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
@@ -46,4 +60,14 @@ pub enum CrateType {
     Binary,
     #[serde(rename = "lib")]
     Library,
+    #[serde(rename = "dylib")]
+    DyLib,
+    #[serde(rename = "cdylib")]
+    CDyLib,
+    #[serde(rename = "staticlib")]
+    StaticLib,
+    #[serde(rename = "rlib")]
+    RLib,
+    #[serde(rename = "proc-macro")]
+    ProcMacro,
 }
