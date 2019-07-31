@@ -27,6 +27,8 @@ struct Error {
     kind: Kind,
     #[serde(rename = "xwhat")]
     resources: Resources,
+    #[serde(rename = "stack")]
+    stack_trace: Stack,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
@@ -58,6 +60,27 @@ struct Resources {
     bytes: usize,
     #[serde(rename = "leakedblocks")]
     blocks: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+struct Stack {
+    #[serde(rename = "frame")]
+    frames: Vec<Frame>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+struct Frame {
+    #[serde(rename = "ip")]
+    #[serde(deserialize_with = "deserialize_hex")]
+    instruction_pointer: u64,
+    #[serde(rename = "obj")]
+    object: Option<String>,
+    #[serde(rename = "dir")]
+    directory: Option<String>,
+    #[serde(rename = "fn")]
+    function: Option<String>,
+    file: Option<String>,
+    line: Option<usize>,
 }
 
 fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
