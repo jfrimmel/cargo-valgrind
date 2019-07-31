@@ -28,3 +28,6 @@ features = ["derive"]
 
 [dependencies.serde_json]
 version = "1.0"
+
+[dependencies.serde-xml-rs]
+version = "0.3.1"
