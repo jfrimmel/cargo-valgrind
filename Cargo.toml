@@ -22,4 +22,9 @@ categories = [
 name = "cargo-valgrind"
 path = "src/bin/main.rs"
 
-[dependencies]
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0"
