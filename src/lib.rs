@@ -4,6 +4,7 @@ mod metadata;
 mod tests;
 
 use std::{
+    ffi::OsString,
     io,
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -35,13 +36,13 @@ impl AsRef<Path> for Build {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Target {
     /// A normal binary with the given name.
-    Binary(String),
+    Binary(OsString),
     /// An example with the given name.
-    Example(String),
+    Example(OsString),
     /// A benchmark with the given name.
-    Benchmark(String),
+    Benchmark(OsString),
     /// A test with the given name.
-    Test(String),
+    Test(OsString),
 }
 
 /// Invoke `cargo` and build the specified target.
