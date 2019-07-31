@@ -44,6 +44,50 @@ pub enum Target {
     Test(String),
 }
 
+/// Invoke `cargo` and build the specified target.
+///
+/// The crate is specified by the path to the `Cargo.toml` using the `manifest`
+/// parameter. The kind of build (debug or release) is selected via the `build`
+/// parameter. The binary to build is specified via the `target` parameter.
+///
+/// # Errors
+/// This function returns an error, if the `cargo command returned an error`.
+pub fn build_target<P: AsRef<Path>>(
+    manifest: P,
+    build: Build,
+    target: Target,
+) -> Result<(), io::Error> {
+    let mut cmd = Command::new("cargo");
+    cmd.arg("build");
+    if let Build::Release = build {
+        cmd.arg("--release");
+    }
+    cmd.arg("--manifest-path");
+    cmd.arg(manifest.as_ref());
+    match target {
+        Target::Binary(_) => cmd.arg("--bin"),
+        Target::Example(_) => cmd.arg("--example"),
+        Target::Benchmark(_) => cmd.arg("--bench"),
+        Target::Test(_) => cmd.arg("--test"),
+    };
+    match target {
+        Target::Binary(name)
+        | Target::Example(name)
+        | Target::Benchmark(name)
+        | Target::Test(name) => cmd.arg(name),
+    };
+    cmd.spawn()?.wait().and_then(|status| {
+        if status.success() {
+            Ok(())
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Cargo finished with errors",
+            ))
+        }
+    })
+}
+
 /// Query all binaries of the crate denoted by the given `Cargo.toml`.
 ///
 /// This function returns the paths to each executable in the given crate. Those
