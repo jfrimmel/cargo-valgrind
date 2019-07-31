@@ -42,5 +42,17 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let cli = cli().get_matches();
+    let build = if cli.is_present("release") {
+        "release"
+    } else {
+        "debug"
+    };
+    let binary = cli
+        .value_of("bin")
+        .or(cli.value_of("example"))
+        .or(cli.value_of("bench"));
+
+    println!("Build type: {}", build);
+    println!("Test artifact: {:?}", binary);
 }
