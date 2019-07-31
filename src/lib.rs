@@ -1,7 +1,23 @@
 //! The core library of the `cargo-valgrind` command.
 mod metadata;
 
-use std::{path::Path, io, process::Command};
+use std::{io, path::Path, process::Command};
+
+/// Query the crate metadata of the given `Cargo.toml`.
+///
+/// This collects the metadata of the crate denoted by the `path` using the
+/// [`cargo_metadata()`](fn.cargo_metadata.html) function. Its output is then
+/// parsed into the `Metadata` structure.
+///
+/// # Errors
+/// This function either fails because of an error of the `cargo_metadata()`
+/// function or due to an invalid output by it, that could not successfully be
+/// parsed.
+fn metadata<P: AsRef<Path>>(path: P) -> Result<metadata::Metadata, io::Error> {
+    let metadata = cargo_metadata(path)?;
+    serde_json::from_str(&metadata)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Invalid metadata: {}", e)))
+}
 
 /// Run the `cargo metadata` command and collect its output.
 ///
