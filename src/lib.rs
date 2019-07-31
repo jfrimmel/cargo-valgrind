@@ -10,11 +10,17 @@ use std::{
 };
 
 /// The possible build types.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Build {
     /// This is a debug build.
     Debug,
     /// This is a release build.
     Release,
+}
+impl Default for Build {
+    fn default() -> Self {
+        Build::Debug
+    }
 }
 impl AsRef<Path> for Build {
     fn as_ref(&self) -> &Path {
