@@ -27,7 +27,11 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
         String::from_utf8(output.stdout)
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Non-UTF-8 string"))
     } else {
-        dbg!(String::from_utf8(output.stderr).unwrap());
-        Err(io::Error::new(io::ErrorKind::Other, "cargo command failed"))
+        let msg = String::from_utf8_lossy(&output.stderr);
+        let msg = msg.trim_start_matches("error: ").trim_end();
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("cargo command failed: {}", msg),
+        ))
     }
 }
