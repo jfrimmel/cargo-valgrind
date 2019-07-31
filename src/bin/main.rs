@@ -1,3 +1,7 @@
+use cargo_valgrind::binaries;
+
 fn main() {
-    println!("Hello, world!");
+    for binary in binaries("Cargo.toml").unwrap() {
+        println!("{}", binary.to_str().unwrap());
+    }
 }

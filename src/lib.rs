@@ -1,7 +1,45 @@
 //! The core library of the `cargo-valgrind` command.
 mod metadata;
 
-use std::{io, path::Path, process::Command};
+use std::{
+    io,
+    path::{Path, PathBuf},
+    process::Command,
+};
+
+/// Query all binaries of the crate denoted by the given `Cargo.toml`.
+///
+/// This function returns the paths to each executable in the given crate. Those
+/// are all the examples, benches as the actual crate binaries. This is based on
+/// the crate metadata obtained by [`metadata()`](fn.metadata.html).
+///
+/// # Errors
+/// This function fails for the same reasons as the `metadata()` function.
+pub fn binaries<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>, io::Error> {
+    let package = metadata(path)?;
+
+    let target_dir = package.target_directory;
+    Ok(package
+        .packages
+        .into_iter()
+        .flat_map(|package| {
+            package
+                .targets
+                .into_iter()
+                .filter(|target| target.crate_types.contains(&metadata::CrateType::Binary))
+                .map(|target| {
+                    target_dir
+                        .join(match target.kind[0] {
+                            metadata::Kind::Binary => "",
+                            metadata::Kind::Example => "examples",
+                            metadata::Kind::Bench => "benches",
+                            metadata::Kind::Library => unreachable!(),
+                        })
+                        .join(target.name)
+                })
+        })
+        .collect())
+}
 
 /// Query the crate metadata of the given `Cargo.toml`.
 ///
