@@ -1,4 +1,6 @@
+use cargo_valgrind::{binaries, Build};
 use clap::{crate_authors, crate_name, crate_version, App, Arg};
+use std::path::PathBuf;
 
 /// Build the command line interface.
 ///
@@ -51,9 +53,9 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
 fn main() {
     let cli = cli().get_matches();
     let build = if cli.is_present("release") {
-        "release"
+        Build::Release
     } else {
-        "debug"
+        Build::Debug
     };
     let binary = cli
         .value_of("bin")
@@ -61,7 +63,36 @@ fn main() {
         .or(cli.value_of("bench"));
     let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
 
+    let binaries = binaries(&manifest, build).unwrap_or_else(|e| {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    });
+
+    let binary = binary
+        .map(PathBuf::from)
+        .or_else(|| {
+            if binaries.len() == 1 {
+                binaries
+                    .get(0)
+                    .map(|path| PathBuf::from(path))
+                    .map(|path| path.file_name().unwrap().into())
+            } else {
+                eprintln!("Multiple possible targets, please specify more precise");
+                std::process::exit(1);
+            }
+        })
+        .and_then(|binary| {
+            binaries.into_iter().find(|path| {
+                path.file_name()
+                    .map(|target| target == binary)
+                    .unwrap_or(false)
+            })
+        })
+        .unwrap_or_else(|| {
+            eprintln!("error: could not find specified executable");
+            std::process::exit(1);
+        });
+
     println!("Manifest: {}", manifest);
-    println!("Build type: {}", build);
     println!("Test artifact: {:?}", binary);
 }
