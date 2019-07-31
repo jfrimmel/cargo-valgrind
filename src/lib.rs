@@ -7,6 +7,22 @@ use std::{
     process::Command,
 };
 
+/// The possible build types.
+pub enum Build {
+    /// This is a debug build.
+    Debug,
+    /// This is a release build.
+    Release,
+}
+impl AsRef<Path> for Build {
+    fn as_ref(&self) -> &Path {
+        match self {
+            Build::Debug => Path::new("debug"),
+            Build::Release => Path::new("release"),
+        }
+    }
+}
+
 /// Query all binaries of the crate denoted by the given `Cargo.toml`.
 ///
 /// This function returns the paths to each executable in the given crate. Those
@@ -15,10 +31,10 @@ use std::{
 ///
 /// # Errors
 /// This function fails for the same reasons as the `metadata()` function.
-pub fn binaries<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>, io::Error> {
+pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
     let package = metadata(path)?;
 
-    let target_dir = package.target_directory.join("debug");
+    let target_dir = package.target_directory.join(build);
     Ok(package
         .packages
         .into_iter()
