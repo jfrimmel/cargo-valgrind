@@ -9,7 +9,7 @@
 #[cfg(test)]
 mod tests;
 
-use serde::{Deserialize, Deserializer, de::Visitor};
+use serde::{de::Visitor, Deserialize, Deserializer};
 use std::fmt::{self, Formatter};
 
 /// The output of a valgrind run.
@@ -64,6 +64,7 @@ fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D:
     deserializer.deserialize_str(HexVisitor)
 }
 
+/// A visitor for parsing a `u64` in the format `0xDEADBEEF`.
 struct HexVisitor;
 impl<'de> Visitor<'de> for HexVisitor {
     type Value = u64;
@@ -75,7 +76,8 @@ impl<'de> Visitor<'de> for HexVisitor {
     fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
         let value = value.to_ascii_lowercase();
         if value.starts_with("0x") {
-            value[2..].parse().map_err(|_| E::custom(format!("invalid hex number")))
+            Self::Value::from_str_radix(&value[2..], 16)
+                .map_err(|_| E::custom(format!("invalid hex number '{}'", value)))
         } else {
             Err(E::custom("'0x' prefix missing"))
         }
