@@ -62,13 +62,13 @@ struct Error {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 enum Kind {
     #[serde(rename = "Leak_DefinitelyLost")]
-    DefinitelyLost,
+    LeakDefinitelyLost,
     #[serde(rename = "Leak_StillReachable")]
-    StillReachable,
+    LeakStillReachable,
     #[serde(rename = "Leak_IndirectlyLost")]
-    IndirectlyLost,
+    LeakIndirectlyLost,
     #[serde(rename = "Leak_PossiblyLost")]
-    PossiblyLost,
+    LeakPossiblyLost,
     InvalidFree,
     MismatchedFree,
     InvalidRead,
