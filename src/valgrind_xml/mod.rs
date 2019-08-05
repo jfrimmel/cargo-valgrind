@@ -81,6 +81,27 @@ enum Kind {
     SyscallParam,
     ClientCheck,
 }
+impl Display for Kind {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Kind::LeakDefinitelyLost => write!(f, "Leak (definitely lost)"),
+            Kind::LeakStillReachable => write!(f, "Leak (still reachable)"),
+            Kind::LeakIndirectlyLost => write!(f, "Leak (indirectly lost)"),
+            Kind::LeakPossiblyLost => write!(f, "Leak (possibly lost)"),
+            Kind::InvalidFree => write!(f, "invalid free"),
+            Kind::MismatchedFree => write!(f, "mismatched free"),
+            Kind::InvalidRead => write!(f, "invalid read"),
+            Kind::InvalidWrite => write!(f, "invalid write"),
+            Kind::InvalidJump => write!(f, "invalid jump"),
+            Kind::Overlap => write!(f, "overlap"),
+            Kind::InvalidMemPool => write!(f, "invalid memory pool"),
+            Kind::UninitCondition => write!(f, "uninitialized condition"),
+            Kind::UninitValue => write!(f, "uninitialized value"),
+            Kind::SyscallParam => write!(f, "syscall parameter"),
+            Kind::ClientCheck => write!(f, "client check"),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 struct Resources {
