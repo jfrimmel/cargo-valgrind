@@ -21,7 +21,7 @@ pub struct Output {
     #[serde(rename = "protocoltool")]
     tool: Tool,
     #[serde(rename = "error")]
-    errors: Vec<Error>,
+    errors: Option<Vec<Error>>,
 }
 
 /// The version of the XML format.
