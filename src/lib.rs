@@ -6,7 +6,7 @@ mod valgrind_xml;
 
 use std::{
     ffi::OsString,
-    io,
+    io::{Error, ErrorKind},
     net::{SocketAddr, TcpListener},
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -59,7 +59,7 @@ pub fn build_target<P: AsRef<Path>>(
     manifest: P,
     build: Build,
     target: Target,
-) -> Result<(), io::Error> {
+) -> Result<(), Error> {
     let mut cmd = Command::new("cargo");
     cmd.arg("build");
     if let Build::Release = build {
@@ -98,7 +98,7 @@ pub fn build_target<P: AsRef<Path>>(
 /// This function fails, if either the valgrind command couldn't be spawned or
 /// executed successfully, the socket creation or read operation fails or the
 /// received XML could not be parsed correctly.
-fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, io::Error> {
+fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, Error> {
     let address: SocketAddr = ([127, 0, 0, 1], 0).into(); // port selected by OS
     let listener = TcpListener::bind(address)?;
     let address = listener.local_addr()?;
@@ -112,17 +112,10 @@ fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, io::
     let (listener, _socket) = listener.accept()?;
 
     if valgrind.wait()?.success() {
-        serde_xml_rs::from_reader(listener).map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not parse valgrind XML: {}", e),
-            )
-        })
+        serde_xml_rs::from_reader(listener)
+            .map_err(|e| Error::new(ErrorKind::Other, format!("Could not parse XML: {}", e)))
     } else {
-        Err(io::Error::new(
-            io::ErrorKind::Other,
-            "valgrind command failed",
-        ))
+        Err(Error::new(ErrorKind::Other, "valgrind command failed"))
     }
 }
 
@@ -143,7 +136,7 @@ fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, io::
 /// # Panics
 /// This function currently panics, if a test or custom build binary is
 /// encountered.
-pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, io::Error> {
+pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, Error> {
     let package = metadata(&path)?;
     let path = path.as_ref().canonicalize()?;
     binaries_from(package, path, build)
@@ -162,7 +155,7 @@ fn binaries_from<P: AsRef<Path>>(
     package: metadata::Metadata,
     requested: P,
     build: Build,
-) -> Result<Vec<PathBuf>, io::Error> {
+) -> Result<Vec<PathBuf>, Error> {
     let target_dir = package.target_directory.join(build);
     Ok(package
         .packages
@@ -203,10 +196,10 @@ fn binaries_from<P: AsRef<Path>>(
 /// This function either fails because of an error of the `cargo_metadata()`
 /// function or due to an invalid output by it, that could not successfully be
 /// parsed.
-fn metadata<P: AsRef<Path>>(path: P) -> Result<metadata::Metadata, io::Error> {
+fn metadata<P: AsRef<Path>>(path: P) -> Result<metadata::Metadata, Error> {
     let metadata = cargo_metadata(path)?;
     serde_json::from_str(&metadata)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Invalid metadata: {}", e)))
+        .map_err(|e| Error::new(ErrorKind::Other, format!("Invalid metadata: {}", e)))
 }
 
 /// Run the `cargo metadata` command and collect its output.
@@ -219,7 +212,7 @@ fn metadata<P: AsRef<Path>>(path: P) -> Result<metadata::Metadata, io::Error> {
 /// This function can fail either because the `cargo metadata` command could not
 /// be spawned, the command failed (i.e. it was executed but returned a non-zero
 /// exit code) or the string printed to stdout was not valid UTF-8.
-fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
+fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, Error> {
     let output = Command::new("cargo")
         .arg("metadata")
         .arg("--format-version=1")
@@ -231,18 +224,15 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
 
     if output.status.success() {
         String::from_utf8(output.stdout)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Non-UTF-8 string"))
+            .map_err(|_| Error::new(ErrorKind::InvalidInput, "Non-UTF-8 string"))
     } else {
         Err(cargo_error(output))
     }
 }
 
 /// Build an `io::Error` from the stderr text outputted by `cargo`.
-fn cargo_error(output: Output) -> io::Error {
+fn cargo_error(output: Output) -> Error {
     let msg = String::from_utf8_lossy(&output.stderr);
     let msg = msg.trim_start_matches("error: ").trim_end();
-    io::Error::new(
-        io::ErrorKind::Other,
-        format!("cargo command failed: {}", msg),
-    )
+    Error::new(ErrorKind::Other, format!("cargo command failed: {}", msg))
 }
