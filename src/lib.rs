@@ -7,7 +7,7 @@ mod valgrind_xml;
 use std::{
     ffi::OsString,
     io,
-    net::{TcpListener, ToSocketAddrs},
+    net::{SocketAddr, TcpListener},
     path::{Path, PathBuf},
     process::{Command, Output},
 };
@@ -98,11 +98,9 @@ pub fn build_target<P: AsRef<Path>>(
 /// This function fails, if either the valgrind command couldn't be spawned or
 /// executed successfully, the socket creation or read operation fails or the
 /// received XML could not be parsed correctly.
-fn run_in_valgrind<P: AsRef<Path>, A: ToSocketAddrs>(
-    path: P,
-    socket: A,
-) -> Result<valgrind_xml::Output, io::Error> {
-    let listener = TcpListener::bind(&socket)?;
+fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, io::Error> {
+    let address: SocketAddr = ([127, 0, 0, 1], 0).into(); // port selected by OS
+    let listener = TcpListener::bind(address)?;
     let address = listener.local_addr()?;
     let mut valgrind = Command::new("valgrind")
         .arg("--leak-check=full")
