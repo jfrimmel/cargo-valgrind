@@ -131,6 +131,20 @@ struct Frame {
     file: Option<String>,
     line: Option<usize>,
 }
+impl Display for Frame {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.write_str(self.function.as_ref().unwrap_or(&"unknown".into()))?;
+        if let Some(file) = &self.file {
+            f.write_str(" (")?;
+            f.write_str(file)?;
+            if let Some(line) = self.line {
+                write!(f, ":{}", line)?;
+            }
+            f.write_str(")")?;
+        }
+        Ok(())
+    }
+}
 
 fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
     deserializer.deserialize_str(HexVisitor)
