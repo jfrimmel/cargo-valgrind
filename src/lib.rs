@@ -7,6 +7,7 @@ mod valgrind_xml;
 use std::{
     ffi::OsString,
     io,
+    net::{TcpListener, ToSocketAddrs},
     path::{Path, PathBuf},
     process::{Command, Output},
 };
@@ -85,6 +86,46 @@ pub fn build_target<P: AsRef<Path>>(
             Err(cargo_error(output))
         }
     })
+}
+
+/// Run a binary inside `valgrind` and collect the report.
+///
+/// This function launches a valgrind process, that does full leak checks and
+/// reports all leak kinds in the XML format. The XML output is sent to a local
+/// socket and then parsed into the `valgrind_xml::Output` structure.
+///
+/// # Errors
+/// This function fails, if either the valgrind command couldn't be spawned or
+/// executed successfully, the socket creation or read operation fails or the
+/// received XML could not be parsed correctly.
+fn run_in_valgrind<P: AsRef<Path>, A: ToSocketAddrs>(
+    path: P,
+    socket: A,
+) -> Result<valgrind_xml::Output, io::Error> {
+    let listener = TcpListener::bind(&socket)?;
+    let address = listener.local_addr()?;
+    let mut valgrind = Command::new("valgrind")
+        .arg("--leak-check=full")
+        .arg("--show-leak-kinds=all")
+        .arg("--xml=yes")
+        .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
+        .arg(path.as_ref())
+        .spawn()?;
+    let (listener, _socket) = listener.accept()?;
+
+    if valgrind.wait()?.success() {
+        serde_xml_rs::from_reader(listener).map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!("Could not parse valgrind XML: {}", e),
+            )
+        })
+    } else {
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            "valgrind command failed",
+        ))
+    }
 }
 
 /// Query all binaries of the crate denoted by the given `Cargo.toml`.
