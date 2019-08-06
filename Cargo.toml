@@ -1,6 +1,6 @@
 [package]
 name = "cargo-valgrind"
-version = "0.2.4"
+version = "0.3.0"
 authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
 edition = "2018"
 description = "A cargo subcommand for running valgrind"
@@ -22,6 +22,9 @@ categories = [
 name = "cargo-valgrind"
 path = "src/bin/main.rs"
 
+[dependencies.clap]
+version = "2.33"
+
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
@@ -32,3 +35,6 @@ version = "1.0"
 [dependencies.serde-xml-rs]
 version = "0.3.1"
 default-features = false
+
+[dependencies.colored]
+version = "1.8.0"
