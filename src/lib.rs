@@ -5,7 +5,6 @@ mod tests;
 mod valgrind_xml;
 
 use std::{
-    ffi::OsString,
     fmt::{self, Display, Formatter},
     io::{Error, ErrorKind},
     net::{SocketAddr, TcpListener},
@@ -40,13 +39,13 @@ impl AsRef<Path> for Build {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Target {
     /// A normal binary with the given name.
-    Binary(OsString),
+    Binary(PathBuf),
     /// An example with the given name.
-    Example(OsString),
+    Example(PathBuf),
     /// A benchmark with the given name.
-    Benchmark(OsString),
+    Benchmark(PathBuf),
     /// A test with the given name.
-    Test(OsString),
+    Test(PathBuf),
 }
 
 /// Invoke `cargo` and build the specified target.
