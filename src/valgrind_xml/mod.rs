@@ -10,7 +10,7 @@
 mod tests;
 
 use serde::{de::Visitor, Deserialize, Deserializer};
-use std::fmt::{self, Formatter};
+use std::fmt::{self, Display, Formatter};
 
 /// The output of a valgrind run.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
@@ -21,7 +21,7 @@ pub struct Output {
     #[serde(rename = "protocoltool")]
     tool: Tool,
     #[serde(rename = "error")]
-    errors: Option<Vec<Error>>,
+    pub errors: Option<Vec<Error>>,
 }
 
 /// The version of the XML format.
@@ -49,18 +49,18 @@ enum Tool {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
-struct Error {
+pub struct Error {
     #[serde(deserialize_with = "deserialize_hex")]
     unique: u64,
-    kind: Kind,
+    pub kind: Kind,
     #[serde(rename = "xwhat")]
-    resources: Resources,
+    pub resources: Resources,
     #[serde(rename = "stack")]
-    stack_trace: Stack,
+    pub stack_trace: Stack,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
-enum Kind {
+pub enum Kind {
     #[serde(rename = "Leak_DefinitelyLost")]
     LeakDefinitelyLost,
     #[serde(rename = "Leak_StillReachable")]
@@ -104,32 +104,32 @@ impl Display for Kind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
-struct Resources {
+pub struct Resources {
     #[serde(rename = "leakedbytes")]
-    bytes: usize,
+    pub bytes: usize,
     #[serde(rename = "leakedblocks")]
-    blocks: usize,
+    pub blocks: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
-struct Stack {
+pub struct Stack {
     #[serde(rename = "frame")]
-    frames: Vec<Frame>,
+    pub frames: Vec<Frame>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
-struct Frame {
+pub struct Frame {
     #[serde(rename = "ip")]
     #[serde(deserialize_with = "deserialize_hex")]
-    instruction_pointer: u64,
+    pub instruction_pointer: u64,
     #[serde(rename = "obj")]
-    object: Option<String>,
+    pub object: Option<String>,
     #[serde(rename = "dir")]
-    directory: Option<String>,
+    pub directory: Option<String>,
     #[serde(rename = "fn")]
-    function: Option<String>,
-    file: Option<String>,
-    line: Option<usize>,
+    pub function: Option<String>,
+    pub file: Option<String>,
+    pub line: Option<usize>,
 }
 impl Display for Frame {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {

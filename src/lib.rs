@@ -88,6 +88,98 @@ pub fn build_target<P: AsRef<Path>>(
     })
 }
 
+/// A single memory leak.
+///
+/// This type holds the information about the leak, which includes the number of
+/// leaked bytes, the kind of leak and the call trace.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Leak {
+    /// The number of bytes leaked.
+    bytes: usize,
+    /// The kind of leak.
+    kind: Kind,
+    /// The calling function, that caused the leak.
+    stack_trace: Vec<Function>,
+}
+impl Leak {
+    /// Query the amount of leaked bytes.
+    pub fn leaked_bytes(&self) -> usize {
+        self.bytes
+    }
+
+    /// Query the kind of the leak.
+    pub fn leak_kind(&self) -> Kind {
+        self.kind
+    }
+
+    /// Query the call trace, i.e. the functions, that lead to the leak.
+    ///
+    /// The functions are in the "most recent call first" order.
+    pub fn back_trace(&self) -> &Vec<Function> {
+        &self.stack_trace
+    }
+}
+
+/// A single function in the call trace.
+///
+/// A function is denoted by its name and its file including the line. Note,
+/// that all of this information may be absent. Valgrind can only output those
+/// information, if the underlying objects have debug information associated
+/// with them.
+///
+/// A `Function` implemented the `Display` trait, in which the available
+/// information are printed in the following scheme `name (file:line)`, where
+/// unavailable information are omitted. If the function name is not available,
+/// it is replaced with `"unknown"`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Function {
+    /// The name of the function, if there is any debug information.
+    name: Option<String>,
+    /// The file name of the function, if there is any debug information.
+    file: Option<String>,
+    /// The line in the function, if there is any debug information.
+    line: Option<usize>,
+}
+impl Function {
+    /// Query the name of the function.
+    ///
+    /// This information may not be present, e.g. if the corresponding object is
+    /// built without debug info.
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|name| name.as_str())
+    }
+
+    /// Query the name of the file in which the called function was defined.
+    ///
+    /// This information may not be present, e.g. if the corresponding object is
+    /// built without debug info.
+    pub fn file(&self) -> Option<&str> {
+        self.file.as_ref().map(|name| name.as_str())
+    }
+
+    /// Query the line of the function of the function call.
+    ///
+    /// This information may not be present, e.g. if the corresponding object is
+    /// built without debug info.
+    pub fn line(&self) -> Option<usize> {
+        self.line
+    }
+}
+impl Display for Function {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.write_str(self.name().as_ref().unwrap_or(&"unknown".into()))?;
+        if let Some(file) = &self.file() {
+            f.write_str(" (")?;
+            f.write_str(file)?;
+            if let Some(line) = self.line() {
+                write!(f, ":{}", line)?;
+            }
+            f.write_str(")")?;
+        }
+        Ok(())
+    }
+}
+
 /// Run a binary inside `valgrind` and collect the report.
 ///
 /// This function launches a valgrind process, that does full leak checks and
