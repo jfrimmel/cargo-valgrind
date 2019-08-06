@@ -12,24 +12,55 @@ A typical mistake would be:
 use std::ffi::CString;
 use std::os::raw::c_char;
 
-// A sample FFI function
-fn ffi_function(string: *const c_char) { /* ... */ }
+extern "C" {
+    fn puts(s: *const c_char);
+}
 
 fn main() {
     let string = CString::new("Test").unwrap();
-    ffi_function(string.into_raw());
+
+    let ptr = string.into_raw();
+    unsafe { puts(ptr) };
+
+    // unsafe { CString::from_raw(ptr) };
 }
 ```
 The memory of the variable `string` will never be freed.
 `cargo valgrind` detects it:
 ```bash
 $ cargo valgrind
-TODO
+    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+   Analyzing `target/debug/cstring`
+Test
+       Error Leaked 5 bytes
+        Info at realloc (vg_replace_malloc.c:826)
+             at realloc (alloc.rs:125)
+             at realloc (alloc.rs:184)
+             at reserve_internal<u8,alloc::alloc::Global> (raw_vec.rs:666)
+             at reserve_exact<u8,alloc::alloc::Global> (raw_vec.rs:411)
+             at reserve_exact<u8> (vec.rs:482)
+             at std::ffi::c_str::CString::from_vec_unchecked (c_str.rs:355)
+             at std::ffi::c_str::CString::_new (c_str.rs:330)
+             at std::ffi::c_str::CString::new (c_str.rs:324)
+             at cstring::main (main.rs:9)
+             at std::rt::lang_start::{{closure}} (rt.rs:64)
+             at {{closure}} (rt.rs:49)
+             at std::panicking::try::do_call (panicking.rs:293)
+             at __rust_maybe_catch_panic (lib.rs:85)
+             at try<i32,closure> (panicking.rs:272)
+             at catch_unwind<closure,i32> (panic.rs:394)
+             at std::rt::lang_start_internal (rt.rs:48)
+             at std::rt::lang_start (rt.rs:64)
+             at main
 ```
+Un-commenting the `unsafe { CString::from_raw(ptr) };` re-takes the memory and frees it correctly.
+`cargo valgrind` will compile the binary for you and won't detect a leak, since there is no leak anymore.
 
 # Installation
 ## Requirements
 You need to have `valgrind` installed and in the `PATH` (you can test this by running `valgrind --help` in your shell).
+
+You'll also need to have `cargo` installed and in the `PATH`, but since this is a cargo subcommand, you will almost certainly have it already installed.
 
 ## Install the binary
 Run the following command:
