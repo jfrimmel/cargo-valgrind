@@ -75,7 +75,8 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         .into_iter()
         .find(|path| path.file_name() == binary.file_name())
         .ok_or("Could not find selected binary")?;
-    let target = Target::Binary(binary.file_name().unwrap().into());
+    let target = binary.file_name().unwrap().into();
+    let target = Target::Binary(target); // FIXME: use correct variant
     let crate_root = manifest.parent().unwrap();
     let target_path = binary
         .strip_prefix(crate_root)
