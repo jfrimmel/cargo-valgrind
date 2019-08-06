@@ -1,4 +1,4 @@
-use cargo_valgrind::{binaries, Build};
+use cargo_valgrind::{binaries, build_target, valgrind, Build, Target};
 use clap::{crate_authors, crate_name, crate_version, App, Arg};
 use std::path::PathBuf;
 
@@ -93,6 +93,42 @@ fn main() {
             std::process::exit(1);
         });
 
-    println!("Manifest: {}", manifest);
-    println!("Test artifact: {:?}", binary);
+    let manifest = PathBuf::from(manifest).canonicalize().unwrap();
+    let crate_root = manifest.parent().unwrap();
+
+    build_target(
+        &manifest,
+        build,
+        Target::Binary(binary.file_name().unwrap().into()),
+    )
+    .unwrap_or_else(|e| {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    });
+
+    println!(
+        "{:>12} `{}`",
+        "Analyzing",
+        binary
+            .strip_prefix(crate_root)
+            .map(|path| path.display().to_string())
+            .unwrap_or_default()
+    );
+    let report = valgrind(&binary).unwrap_or_else(|e| {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    });
+
+    if report.len() >= 1 {
+        for error in report {
+            println!("{:>12} Leaked {} bytes", "Error", error.leaked_bytes());
+            let mut info = Some("Info");
+            for function in error.back_trace() {
+                println!("{:>12} at {}", info.take().unwrap_or_default(), function);
+            }
+        }
+        std::process::exit(1);
+    } else {
+        std::process::exit(0);
+    }
 }
