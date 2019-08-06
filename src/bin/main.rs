@@ -51,7 +51,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-fn main() {
+fn run() -> Result<bool, Box<dyn std::error::Error>> {
     let cli = cli().get_matches();
     let build = if cli.is_present("release") {
         Build::Release
@@ -63,63 +63,29 @@ fn main() {
         .or(cli.value_of("example"))
         .or(cli.value_of("bench"));
     let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
+    let manifest = PathBuf::from(manifest).canonicalize()?;
 
-    let binaries = binaries(&manifest, build).unwrap_or_else(|e| {
-        eprintln!("Error: {}", e);
-        std::process::exit(1);
-    });
-
-    let binary = binary
-        .map(PathBuf::from)
-        .or_else(|| {
-            if binaries.len() == 1 {
-                binaries
-                    .get(0)
-                    .map(|path| PathBuf::from(path))
-                    .map(|path| path.file_name().unwrap().into())
-            } else {
-                eprintln!("Multiple possible targets, please specify more precise");
-                std::process::exit(1);
-            }
-        })
-        .and_then(|binary| {
-            binaries.into_iter().find(|path| {
-                path.file_name()
-                    .map(|target| target == binary)
-                    .unwrap_or(false)
-            })
-        })
-        .unwrap_or_else(|| {
-            eprintln!("error: could not find specified executable");
-            std::process::exit(1);
-        });
-
-    let manifest = PathBuf::from(manifest).canonicalize().unwrap();
+    let binaries = binaries(&manifest, build)?;
+    let binary = match binary {
+        Some(path) => PathBuf::from(path),
+        None if binaries.len() == 1 => PathBuf::from(&binaries[0]),
+        None => Err("Multiple possible targets, please specify more precise")?,
+    };
+    let binary = binaries
+        .into_iter()
+        .find(|path| path == &binary)
+        .ok_or("Could not find selected binary")?;
+    let target = Target::Binary(binary.file_name().unwrap().into());
     let crate_root = manifest.parent().unwrap();
+    let target_path = binary
+        .strip_prefix(crate_root)
+        .map(|path| path.display().to_string())
+        .unwrap_or_default();
 
-    build_target(
-        &manifest,
-        build,
-        Target::Binary(binary.file_name().unwrap().into()),
-    )
-    .unwrap_or_else(|e| {
-        eprintln!("Error: {}", e);
-        std::process::exit(1);
-    });
+    build_target(&manifest, build, target)?;
+    println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    println!(
-        "{:>12} `{}`",
-        "Analyzing".green().bold(),
-        binary
-            .strip_prefix(crate_root)
-            .map(|path| path.display().to_string())
-            .unwrap_or_default()
-    );
-    let report = valgrind(&binary).unwrap_or_else(|e| {
-        eprintln!("Error: {}", e);
-        std::process::exit(1);
-    });
-
+    let report = valgrind(&binary)?;
     if report.len() >= 1 {
         for error in report {
             println!(
@@ -132,8 +98,19 @@ fn main() {
                 println!("{:>12} at {}", info.take().unwrap_or_default(), function);
             }
         }
-        std::process::exit(1);
+        Ok(false)
     } else {
-        std::process::exit(0);
+        Ok(true)
+    }
+}
+
+fn main() {
+    match run() {
+        Ok(true) => {}
+        Ok(false) => std::process::exit(1),
+        Err(e) => {
+            eprintln!("{} {}", "error:".red().bold(), e);
+            std::process::exit(1);
+        }
     }
 }
