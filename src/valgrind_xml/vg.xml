@@ -1,0 +1,814 @@
+<?xml version="1.0"?>
+
+<valgrindoutput>
+
+<protocolversion>4</protocolversion>
+<protocoltool>memcheck</protocoltool>
+
+<preamble>
+  <line>Memcheck, a memory error detector</line>
+  <line>Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.</line>
+  <line>Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info</line>
+  <line>Command: target/debug/examples/creation</line>
+</preamble>
+
+<pid>17670</pid>
+<ppid>9061</ppid>
+<tool>memcheck</tool>
+
+<args>
+  <vargv>
+    <exe>/usr/bin/valgrind</exe>
+    <arg>--leak-check=full</arg>
+    <arg>--show-leak-kinds=all</arg>
+    <arg>--error-exitcode=1</arg>
+    <arg>--xml=yes</arg>
+    <arg>--xml-file=vg.xml</arg>
+  </vargv>
+  <argv>
+    <exe>target/debug/examples/creation</exe>
+  </argv>
+</args>
+
+<status>
+  <state>RUNNING</state>
+  <time>00:00:00:00.195 </time>
+</status>
+
+
+<status>
+  <state>FINISHED</state>
+  <time>00:00:00:05.944 </time>
+</status>
+
+<error>
+  <unique>0x0</unique>
+  <tid>1</tid>
+  <kind>Leak_DefinitelyLost</kind>
+  <xwhat>
+    <text>15 bytes in 1 blocks are definitely lost in loss record 1 of 8</text>
+    <leakedbytes>15</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483AD7B</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>realloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>826</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>realloc</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>alloc.rs</file>
+      <line>125</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>realloc</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>alloc.rs</file>
+      <line>184</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_internal&lt;u8,alloc::alloc::Global&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>raw_vec.rs</file>
+      <line>666</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_exact&lt;u8,alloc::alloc::Global&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>raw_vec.rs</file>
+      <line>411</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_exact&lt;u8&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>vec.rs</file>
+      <line>482</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::from_vec_unchecked</fn>
+      <dir>src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>355</line>
+    </frame>
+    <frame>
+      <ip>0x12B68C</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::_new</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c//src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>330</line>
+    </frame>
+    <frame>
+      <ip>0x125331</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::new</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>324</line>
+    </frame>
+    <frame>
+      <ip>0x123253</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>vk::create_instance::{{closure}}</fn>
+      <dir>/home/jfrimmel/git/lava.rs/vk-core/src</dir>
+      <file>lib.rs</file>
+      <line>368</line>
+    </frame>
+    <frame>
+      <ip>0x120AE0</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold::{{closure}}</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x11D899</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::slice::Iter&lt;T&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/slice</dir>
+      <file>mod.rs</file>
+      <line>3159</line>
+    </frame>
+    <frame>
+      <ip>0x1207FA</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x12093A</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x1208BA</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x1205FC</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>core::iter::traits::iterator::Iterator::for_each</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/traits</dir>
+      <file>iterator.rs</file>
+      <line>604</line>
+    </frame>
+    <frame>
+      <ip>0x11ACDB</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;alloc::vec::Vec&lt;T&gt; as alloc::vec::SpecExtend&lt;T,I&gt;&gt;::spec_extend</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>vec.rs</file>
+      <line>1862</line>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x1</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>24 bytes in 1 blocks are still reachable in loss record 2 of 8</text>
+    <leakedbytes>24</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483877F</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>malloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>299</line>
+    </frame>
+    <frame>
+      <ip>0x401CBBE</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>strdup</fn>
+    </frame>
+    <frame>
+      <ip>0x40175C5</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_load_cache_lookup</fn>
+    </frame>
+    <frame>
+      <ip>0x400A2AB</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object</fn>
+    </frame>
+    <frame>
+      <ip>0x400E704</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>openaux</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x400EA82</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object_deps</fn>
+    </frame>
+    <frame>
+      <ip>0x40143E3</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x2</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>24 bytes in 1 blocks are still reachable in loss record 3 of 8</text>
+    <leakedbytes>24</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483877F</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>malloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>299</line>
+    </frame>
+    <frame>
+      <ip>0x400CAC7</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_new_object</fn>
+    </frame>
+    <frame>
+      <ip>0x400731F</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object_from_fd</fn>
+    </frame>
+    <frame>
+      <ip>0x4009F75</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object</fn>
+    </frame>
+    <frame>
+      <ip>0x400E704</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>openaux</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x400EA82</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object_deps</fn>
+    </frame>
+    <frame>
+      <ip>0x40143E3</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x3</unique>
+  <tid>1</tid>
+  <kind>Leak_DefinitelyLost</kind>
+  <xwhat>
+    <text>185 bytes in 6 blocks are definitely lost in loss record 4 of 8</text>
+    <leakedbytes>185</leakedbytes>
+    <leakedblocks>6</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483AD7B</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>realloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>826</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>realloc</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>alloc.rs</file>
+      <line>125</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>realloc</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>alloc.rs</file>
+      <line>184</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_internal&lt;u8,alloc::alloc::Global&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>raw_vec.rs</file>
+      <line>666</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_exact&lt;u8,alloc::alloc::Global&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>raw_vec.rs</file>
+      <line>411</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>reserve_exact&lt;u8&gt;</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>vec.rs</file>
+      <line>482</line>
+    </frame>
+    <frame>
+      <ip>0x12B6F4</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::from_vec_unchecked</fn>
+      <dir>src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>355</line>
+    </frame>
+    <frame>
+      <ip>0x12B68C</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::_new</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c//src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>330</line>
+    </frame>
+    <frame>
+      <ip>0x125331</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>std::ffi::c_str::CString::new</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libstd/ffi</dir>
+      <file>c_str.rs</file>
+      <line>324</line>
+    </frame>
+    <frame>
+      <ip>0x122BA3</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>vk::create_instance::{{closure}}</fn>
+      <dir>/home/jfrimmel/git/lava.rs/vk-core/src</dir>
+      <file>lib.rs</file>
+      <line>361</line>
+    </frame>
+    <frame>
+      <ip>0x120BA0</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold::{{closure}}</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x11D989</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::slice::Iter&lt;T&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/slice</dir>
+      <file>mod.rs</file>
+      <line>3159</line>
+    </frame>
+    <frame>
+      <ip>0x12087A</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x1208FA</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x12083A</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;core::iter::adapters::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/adapters</dir>
+      <file>mod.rs</file>
+      <line>589</line>
+    </frame>
+    <frame>
+      <ip>0x12064C</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>core::iter::traits::iterator::Iterator::for_each</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/libcore/iter/traits</dir>
+      <file>iterator.rs</file>
+      <line>604</line>
+    </frame>
+    <frame>
+      <ip>0x11A76B</ip>
+      <obj>/home/jfrimmel/git/lava.rs/target/debug/examples/creation</obj>
+      <fn>&lt;alloc::vec::Vec&lt;T&gt; as alloc::vec::SpecExtend&lt;T,I&gt;&gt;::spec_extend</fn>
+      <dir>/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc</dir>
+      <file>vec.rs</file>
+      <line>1862</line>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x4</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>1,191 bytes in 1 blocks are still reachable in loss record 5 of 8</text>
+    <leakedbytes>1191</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483AB65</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>calloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>752</line>
+    </frame>
+    <frame>
+      <ip>0x400C801</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_new_object</fn>
+    </frame>
+    <frame>
+      <ip>0x400731F</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object_from_fd</fn>
+    </frame>
+    <frame>
+      <ip>0x4009F75</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object</fn>
+    </frame>
+    <frame>
+      <ip>0x400E704</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>openaux</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x400EA82</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_map_object_deps</fn>
+    </frame>
+    <frame>
+      <ip>0x40143E3</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x5</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>1,416 bytes in 1 blocks are still reachable in loss record 6 of 8</text>
+    <leakedbytes>1416</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483AB65</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>calloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>752</line>
+    </frame>
+    <frame>
+      <ip>0x4011E1A</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_check_map_versions</fn>
+    </frame>
+    <frame>
+      <ip>0x401442D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F472</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_error</fn>
+    </frame>
+    <frame>
+      <ip>0x48ECAB8</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x48EC3D9</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+      <fn>dlopen</fn>
+    </frame>
+    <frame>
+      <ip>0x48BB1DD</ip>
+      <obj>/usr/lib/libvulkan.so.1.1.115</obj>
+    </frame>
+    <frame>
+      <ip>0x48C2073</ip>
+      <obj>/usr/lib/libvulkan.so.1.1.115</obj>
+      <fn>vkCreateInstance</fn>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x6</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>4,064 bytes in 1 blocks are still reachable in loss record 7 of 8</text>
+    <leakedbytes>4064</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483AB65</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>calloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>752</line>
+    </frame>
+    <frame>
+      <ip>0x400B506</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>do_lookup_x</fn>
+    </frame>
+    <frame>
+      <ip>0x400B7FA</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_lookup_symbol_x</fn>
+    </frame>
+    <frame>
+      <ip>0x400D2E3</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_relocate_object</fn>
+    </frame>
+    <frame>
+      <ip>0x4014554</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F472</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_error</fn>
+    </frame>
+    <frame>
+      <ip>0x48ECAB8</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x48EC3D9</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+      <fn>dlopen</fn>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x7</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>72,704 bytes in 1 blocks are still reachable in loss record 8 of 8</text>
+    <leakedbytes>72704</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x483877F</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>malloc</fn>
+      <dir>/build/valgrind/src/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>299</line>
+    </frame>
+    <frame>
+      <ip>0x5AEDAEA</ip>
+      <obj>/usr/lib/libstdc++.so.6.0.26</obj>
+      <fn>pool</fn>
+      <dir>/build/gcc/src/gcc/libstdc++-v3/libsupc++</dir>
+      <file>eh_alloc.cc</file>
+      <line>123</line>
+    </frame>
+    <frame>
+      <ip>0x5AEDAEA</ip>
+      <obj>/usr/lib/libstdc++.so.6.0.26</obj>
+      <fn>__static_initialization_and_destruction_0</fn>
+      <dir>/build/gcc/src/gcc/libstdc++-v3/libsupc++</dir>
+      <file>eh_alloc.cc</file>
+      <line>262</line>
+    </frame>
+    <frame>
+      <ip>0x5AEDAEA</ip>
+      <obj>/usr/lib/libstdc++.so.6.0.26</obj>
+      <fn>_GLOBAL__sub_I_eh_alloc.cc</fn>
+      <dir>/build/gcc/src/gcc/libstdc++-v3/libsupc++</dir>
+      <file>eh_alloc.cc</file>
+      <line>338</line>
+    </frame>
+    <frame>
+      <ip>0x4010799</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>call_init.part.0</fn>
+    </frame>
+    <frame>
+      <ip>0x40108A0</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_init</fn>
+    </frame>
+    <frame>
+      <ip>0x4014682</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>dl_open_worker</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4013F5D</ip>
+      <obj>/usr/lib/ld-2.29.so</obj>
+      <fn>_dl_open</fn>
+    </frame>
+    <frame>
+      <ip>0x48EC34B</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x4A6F3D8</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_exception</fn>
+    </frame>
+    <frame>
+      <ip>0x4A6F472</ip>
+      <obj>/usr/lib/libc-2.29.so</obj>
+      <fn>_dl_catch_error</fn>
+    </frame>
+    <frame>
+      <ip>0x48ECAB8</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+    </frame>
+    <frame>
+      <ip>0x48EC3D9</ip>
+      <obj>/usr/lib/libdl-2.29.so</obj>
+      <fn>dlopen</fn>
+    </frame>
+  </stack>
+</error>
+
+<errorcounts>
+</errorcounts>
+
+<suppcounts>
+</suppcounts>
+
+</valgrindoutput>
+
