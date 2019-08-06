@@ -261,6 +261,7 @@ fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, Erro
 /// # Panics
 /// This function currently panics, if a test or custom build binary is
 /// encountered.
+#[deprecated(note = "use targets() instead, as it provides more information")]
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, Error> {
     let package = metadata(&path)?;
     let path = path.as_ref().canonicalize()?;
