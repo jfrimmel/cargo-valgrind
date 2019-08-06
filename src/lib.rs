@@ -6,11 +6,13 @@ mod valgrind_xml;
 
 use std::{
     ffi::OsString,
+    fmt::{self, Display, Formatter},
     io::{Error, ErrorKind},
     net::{SocketAddr, TcpListener},
     path::{Path, PathBuf},
     process::{Command, Output},
 };
+pub use valgrind_xml::Kind;
 
 /// The possible build types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -86,6 +88,38 @@ pub fn build_target<P: AsRef<Path>>(
             Err(cargo_error(output))
         }
     })
+}
+
+/// Run the program denoted by `path` in valgrind.
+///
+/// This function runs the program in valgrind, parses its XML output, collects
+/// the leak information and returns the list of leaks. If this list is empty,
+/// the program has no detected leaks.
+///
+/// # Errors
+/// This function returns an error, if valgrind could not be executed
+/// successfully, its output could not be parsed correctly or any other process
+/// related error occurs.
+pub fn valgrind<P: AsRef<Path>>(path: P) -> Result<Vec<Leak>, Error> {
+    Ok(run_in_valgrind(path)?
+        .errors
+        .unwrap_or_default()
+        .into_iter()
+        .map(|error| Leak {
+            bytes: error.resources.bytes,
+            kind: error.kind,
+            stack_trace: error
+                .stack_trace
+                .frames
+                .into_iter()
+                .map(|frame| Function {
+                    name: frame.function,
+                    file: frame.file,
+                    line: frame.line,
+                })
+                .collect(),
+        })
+        .collect())
 }
 
 /// A single memory leak.
