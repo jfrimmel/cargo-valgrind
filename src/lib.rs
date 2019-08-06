@@ -264,7 +264,15 @@ fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, Erro
 pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, Error> {
     let package = metadata(&path)?;
     let path = path.as_ref().canonicalize()?;
-    binaries_from(package, path, build)
+    Ok(binaries_from(package, path, build)?
+        .into_iter()
+        .map(|target| match target {
+            Target::Binary(path)
+            | Target::Example(path)
+            | Target::Benchmark(path)
+            | Target::Test(path) => path,
+        })
+        .collect())
 }
 
 /// Query all binaries of given metadata.
@@ -280,7 +288,7 @@ fn binaries_from<P: AsRef<Path>>(
     package: metadata::Metadata,
     requested: P,
     build: Build,
-) -> Result<Vec<PathBuf>, Error> {
+) -> Result<Vec<Target>, Error> {
     let target_dir = package.target_directory.join(build);
     Ok(package
         .packages
@@ -292,7 +300,7 @@ fn binaries_from<P: AsRef<Path>>(
                 .into_iter()
                 .filter(|target| target.crate_types.contains(&metadata::CrateType::Binary))
                 .map(|target| {
-                    target_dir
+                    let path = target_dir
                         .join(match target.kind[0] {
                             metadata::Kind::Binary => "",
                             metadata::Kind::Example => "examples",
@@ -305,7 +313,14 @@ fn binaries_from<P: AsRef<Path>>(
                             | metadata::Kind::StaticLib
                             | metadata::Kind::RLib => unreachable!("Non-binaries are filtered out"),
                         })
-                        .join(target.name)
+                        .join(target.name);
+                    match target.kind[0] {
+                        metadata::Kind::Binary => Target::Binary(path),
+                        metadata::Kind::Example => Target::Example(path),
+                        metadata::Kind::Bench => Target::Benchmark(path),
+                        metadata::Kind::Test => Target::Test(path),
+                        _ => unreachable!("Unsupported target type"),
+                    }
                 })
         })
         .collect())
