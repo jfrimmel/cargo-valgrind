@@ -275,6 +275,30 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, E
         .collect())
 }
 
+/// Query all targets of the crate denoted by the given `Cargo.toml`.
+///
+/// This function returns the paths to and type of each executable in the given
+/// crate. Those are all the examples, benches as the actual crate binaries.
+/// This is based on the crate metadata obtained by
+/// [`metadata()`](fn.metadata.html).
+///
+/// Only binaries of the specified manifest are returned. This means, that other
+/// crates in the same workspace may have binaries, but they are ignored.
+///
+/// Note, that plain tests and `custom-build` kinds currently are not supported.
+///
+/// # Errors
+/// This function fails for the same reasons as the `metadata()` function.
+///
+/// # Panics
+/// This function currently panics, if a test or custom build binary is
+/// encountered.
+pub fn targets<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<Target>, Error> {
+    let package = metadata(&path)?;
+    let path = path.as_ref().canonicalize()?;
+    binaries_from(package, path, build)
+}
+
 /// Query all binaries of given metadata.
 ///
 /// See [`binaries()`](fn.binaries.html) for details.
