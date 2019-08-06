@@ -73,7 +73,7 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     };
     let binary = binaries
         .into_iter()
-        .find(|path| path == &binary)
+        .find(|path| path.file_name() == binary.file_name())
         .ok_or("Could not find selected binary")?;
     let target = Target::Binary(binary.file_name().unwrap().into());
     let crate_root = manifest.parent().unwrap();
