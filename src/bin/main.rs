@@ -1,5 +1,6 @@
 use cargo_valgrind::{binaries, build_target, valgrind, Build, Target};
 use clap::{crate_authors, crate_name, crate_version, App, Arg};
+use colored::Colorize;
 use std::path::PathBuf;
 
 /// Build the command line interface.
@@ -108,7 +109,7 @@ fn main() {
 
     println!(
         "{:>12} `{}`",
-        "Analyzing",
+        "Analyzing".green().bold(),
         binary
             .strip_prefix(crate_root)
             .map(|path| path.display().to_string())
@@ -121,8 +122,12 @@ fn main() {
 
     if report.len() >= 1 {
         for error in report {
-            println!("{:>12} Leaked {} bytes", "Error", error.leaked_bytes());
-            let mut info = Some("Info");
+            println!(
+                "{:>12} Leaked {} bytes",
+                "Error".red().bold(),
+                error.leaked_bytes()
+            );
+            let mut info = Some("Info".cyan().bold());
             for function in error.back_trace() {
                 println!("{:>12} at {}", info.take().unwrap_or_default(), function);
             }
