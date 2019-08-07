@@ -118,7 +118,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     };
     let target = targets
         .into_iter()
-        .find(|path| path.name() == target.name())
+        .find(|&path| path == &target)
         .cloned()
         .ok_or("Could not find selected binary")?;
     Ok(target)
