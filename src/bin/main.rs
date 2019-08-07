@@ -1,4 +1,4 @@
-use cargo_valgrind::{binaries, build_target, valgrind, Build, Target};
+use cargo_valgrind::{targets, build_target, valgrind, Build, Target};
 use clap::{crate_authors, crate_name, crate_version, App, Arg};
 use colored::Colorize;
 use std::path::PathBuf;
@@ -60,33 +60,35 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     };
     let binary = cli
         .value_of("bin")
-        .or(cli.value_of("example"))
-        .or(cli.value_of("bench"));
+        .map(|path| Target::Binary(PathBuf::from(path)))
+        .or(cli.value_of("example")
+        .map(|path| Target::Example(PathBuf::from(path))))
+        .or(cli.value_of("bench")
+        .map(|path| Target::Benchmark(PathBuf::from(path))));
     let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
     let manifest = PathBuf::from(manifest).canonicalize()?;
 
-    let binaries = binaries(&manifest, build)?;
+    let binaries = targets(&manifest, build)?;
     let binary = match binary {
-        Some(path) => PathBuf::from(path),
-        None if binaries.len() == 1 => PathBuf::from(&binaries[0]),
+        Some(path) => path,
+        None if binaries.len() == 1 => binaries[0].clone(),
         None => Err("Multiple possible targets, please specify more precise")?,
     };
     let binary = binaries
         .into_iter()
-        .find(|path| path.file_name() == binary.file_name())
+        .find(|path| path.name() == binary.name())
         .ok_or("Could not find selected binary")?;
-    let target = binary.file_name().unwrap().into();
-    let target = Target::Binary(target); // FIXME: use correct variant
     let crate_root = manifest.parent().unwrap();
     let target_path = binary
+        .path()
         .strip_prefix(crate_root)
         .map(|path| path.display().to_string())
         .unwrap_or_default();
 
-    build_target(&manifest, build, target)?;
+    build_target(&manifest, build, binary.clone())?;
     println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    let report = valgrind(&binary)?;
+    let report = valgrind(binary.path())?;
     if report.len() >= 1 {
         for error in report {
             println!(
