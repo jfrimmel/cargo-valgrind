@@ -1,5 +1,5 @@
 use cargo_valgrind::{build_target, targets, valgrind, Build, Target};
-use clap::{crate_authors, crate_name, crate_version, App, Arg};
+use clap::{crate_authors, crate_name, crate_version, App, Arg, ArgMatches};
 use colored::Colorize;
 use std::path::PathBuf;
 
@@ -51,32 +51,55 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-fn run() -> Result<bool, Box<dyn std::error::Error>> {
-    let cli = cli().get_matches();
-    let build = if cli.is_present("release") {
+/// Query the build type (debug/release) from the the command line parameters.
+fn build_type(parameters: &ArgMatches) -> Build {
+    if parameters.is_present("release") {
         Build::Release
     } else {
         Build::Debug
-    };
-    let binary = cli
+    }
+}
+
+/// Query the path to the `Cargo.toml` from the the command line parameters.
+///
+/// This defaults to the current directory, if the `--manifest-path` parameter
+/// is not given.
+///
+/// # Errors
+/// This function fails, if the specified path is not valid.
+fn manifest(parameters: &ArgMatches) -> std::io::Result<PathBuf> {
+    let manifest = parameters
+        .value_of("manifest")
+        .unwrap_or("Cargo.toml".into());
+    PathBuf::from(manifest).canonicalize()
+}
+
+/// Query the specified `Target`, if any.
+fn specified_target(parameters: &ArgMatches) -> Option<Target> {
+    parameters
         .value_of("bin")
         .map(|path| Target::Binary(PathBuf::from(path)))
-        .or(cli
+        .or(parameters
             .value_of("example")
             .map(|path| Target::Example(PathBuf::from(path))))
-        .or(cli
+        .or(parameters
             .value_of("bench")
-            .map(|path| Target::Benchmark(PathBuf::from(path))));
-    let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
-    let manifest = PathBuf::from(manifest).canonicalize()?;
+            .map(|path| Target::Benchmark(PathBuf::from(path))))
+}
 
-    let binaries = targets(&manifest, build)?;
-    let binary = match binary {
+fn run() -> Result<bool, Box<dyn std::error::Error>> {
+    let cli = cli().get_matches();
+    let build = build_type(&cli);
+    let target = specified_target(&cli);
+    let manifest = manifest(&cli)?;
+
+    let targets = targets(&manifest, build)?;
+    let binary = match target {
         Some(path) => path,
-        None if binaries.len() == 1 => binaries[0].clone(),
+        None if targets.len() == 1 => targets[0].clone(),
         None => Err("Multiple possible targets, please specify more precise")?,
     };
-    let binary = binaries
+    let binary = targets
         .into_iter()
         .find(|path| path.name() == binary.name())
         .ok_or("Could not find selected binary")?;
