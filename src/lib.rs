@@ -462,5 +462,9 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, Error> {
 fn cargo_error(output: Output) -> Error {
     let msg = String::from_utf8_lossy(&output.stderr);
     let msg = msg.trim_start_matches("error: ").trim_end();
-    Error::new(ErrorKind::Other, format!("cargo command failed: {}", msg))
+    if msg.is_empty() {
+        Error::new(ErrorKind::Other, "cargo command failed")
+    } else {
+        Error::new(ErrorKind::Other, format!("cargo command failed: {}", msg))
+    }
 }
