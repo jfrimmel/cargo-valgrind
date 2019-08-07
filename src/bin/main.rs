@@ -116,6 +116,19 @@ fn specified_target(parameters: &ArgMatches) -> Option<Target> {
 /// are multiple targets to choose from, or if the user specified a non-existing
 /// target.
 fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> {
+    let target_type = |target: &Target| {
+        if target.is_binary() {
+            "bin"
+        } else if target.is_example() {
+            "example"
+        } else if target.is_benchmark() {
+            "bench"
+        } else if target.is_test() {
+            "test"
+        } else {
+            unreachable!();
+        }
+    };
     let target = match specified {
         Some(path) => path,
         None if targets.len() == 1 => targets[0].clone(),
@@ -124,17 +137,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
             let targets: Vec<_> = targets
                 .iter()
                 .map(|target| {
-                    let flag = if target.is_binary() {
-                        "bin"
-                    } else if target.is_example() {
-                        "example"
-                    } else if target.is_benchmark() {
-                        "bench"
-                    } else if target.is_test() {
-                        "test"
-                    } else {
-                        unreachable!();
-                    };
+                    let flag = target_type(target);
                     format!("--{} {}", flag, target.name())
                 })
                 .collect();
@@ -147,7 +150,11 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
         .into_iter()
         .find(|&path| path == &target)
         .cloned()
-        .ok_or("Could not find selected binary")?;
+        .ok_or(format!(
+            "Could not find {} target `{}`",
+            target_type(&target).replace("bin", "binary"),
+            target.name()
+        ))?;
     Ok(target)
 }
 
