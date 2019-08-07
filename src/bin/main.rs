@@ -6,6 +6,14 @@ use std::path::PathBuf;
 /// The Result type for this application.
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+/// The result of the valgrind run.
+enum Report {
+    /// The analyzed binary contains leaks.
+    ContainsErrors,
+    /// There was no error detected in the analyzed binary.
+    NoErrorDetected,
+}
+
 /// Build the command line interface.
 ///
 /// The CLI currently supports the distinction between debug and release builds
@@ -105,7 +113,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     Ok(target)
 }
 
-fn run() -> Result<bool> {
+fn run() -> Result<Report> {
     let cli = cli().get_matches();
     let build = build_type(&cli);
     let target = specified_target(&cli);
@@ -136,16 +144,16 @@ fn run() -> Result<bool> {
                 println!("{:>12} at {}", info.take().unwrap_or_default(), function);
             }
         }
-        Ok(false)
+        Ok(Report::ContainsErrors)
     } else {
-        Ok(true)
+        Ok(Report::NoErrorDetected)
     }
 }
 
 fn main() {
     match run() {
-        Ok(true) => {}
-        Ok(false) => std::process::exit(1),
+        Ok(Report::NoErrorDetected) => {}
+        Ok(Report::ContainsErrors) => std::process::exit(1),
         Err(e) => {
             eprintln!("{} {}", "error:".red().bold(), e);
             std::process::exit(1);
