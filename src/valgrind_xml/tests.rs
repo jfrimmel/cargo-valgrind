@@ -5,18 +5,19 @@ fn sample_output() {
     let xml: Output =
         serde_xml_rs::from_reader(std::fs::File::open("src/valgrind_xml/vg.xml").unwrap()).unwrap();
 
-    assert_eq!(xml.errors.len(), 8);
-    assert_eq!(xml.errors[0].kind, Kind::LeakDefinitelyLost);
-    assert_eq!(xml.errors[0].unique, 0x0);
+    let errors = xml.errors.unwrap();
+    assert_eq!(errors.len(), 8);
+    assert_eq!(errors[0].kind, Kind::LeakDefinitelyLost);
+    assert_eq!(errors[0].unique, 0x0);
     assert_eq!(
-        xml.errors[0].resources,
+        errors[0].resources,
         Resources {
             bytes: 15,
             blocks: 1,
         }
     );
     assert_eq!(
-        &xml.errors[0].stack_trace.frames[..2],
+        &errors[0].stack_trace.frames[..2],
         &[
             Frame {
                 instruction_pointer: 0x483AD7B,
@@ -39,10 +40,10 @@ fn sample_output() {
         ]
     );
 
-    assert_eq!(xml.errors[1].kind, Kind::LeakStillReachable);
-    assert_eq!(xml.errors[1].unique, 0x1);
+    assert_eq!(errors[1].kind, Kind::LeakStillReachable);
+    assert_eq!(errors[1].unique, 0x1);
     assert_eq!(
-        xml.errors[1].resources,
+        errors[1].resources,
         Resources {
             bytes: 24,
             blocks: 1,
