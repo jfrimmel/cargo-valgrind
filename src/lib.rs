@@ -130,12 +130,7 @@ pub fn build_target<P: AsRef<Path>>(
         Target::Benchmark(_) => cmd.arg("--bench"),
         Target::Test(_) => cmd.arg("--test"),
     };
-    match target {
-        Target::Binary(name)
-        | Target::Example(name)
-        | Target::Benchmark(name)
-        | Target::Test(name) => cmd.arg(name),
-    };
+    cmd.arg(target.name());
     cmd.spawn()?.wait_with_output().and_then(|output| {
         if output.status.success() {
             Ok(())
