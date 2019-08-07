@@ -1,7 +1,7 @@
-use cargo_valgrind::{build_target, targets, valgrind, Build, Target};
+use cargo_valgrind::{build_target, targets, valgrind, Build, Leak, Target};
 use clap::{crate_authors, crate_name, crate_version, App, Arg, ArgMatches};
 use colored::Colorize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// The Result type for this application.
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -124,6 +124,38 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     Ok(target)
 }
 
+/// Display a single `Leak` to the console.
+fn display_error(leak: Leak) {
+    println!(
+        "{:>12} Leaked {} bytes",
+        "Error".red().bold(),
+        leak.leaked_bytes()
+    );
+    let mut info = Some("Info".cyan().bold());
+    for function in leak.back_trace() {
+        println!("{:>12} at {}", info.take().unwrap_or_default(), function);
+    }
+}
+
+/// Run the specified target inside of valgrind and print the output.
+fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
+    let crate_root = manifest.parent().ok_or("Invalid empty manifest path")?;
+    let target_path = target
+        .path()
+        .strip_prefix(crate_root)
+        .map(|path| path.display().to_string())
+        .unwrap_or_default();
+    println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
+
+    let errors = valgrind(target.path())?;
+    if errors.is_empty() {
+        Ok(Report::NoErrorDetected)
+    } else {
+        errors.into_iter().for_each(display_error);
+        Ok(Report::ContainsErrors)
+    }
+}
+
 fn run() -> Result<Report> {
     let cli = cli().get_matches();
     let build = build_type(&cli);
@@ -133,32 +165,7 @@ fn run() -> Result<Report> {
     let targets = targets(&manifest, build)?;
     let target = find_target(target, &targets)?;
     build_target(&manifest, build, target.clone())?;
-
-    let crate_root = manifest.parent().unwrap();
-    let target_path = target
-        .path()
-        .strip_prefix(crate_root)
-        .map(|path| path.display().to_string())
-        .unwrap_or_default();
-    println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
-
-    let report = valgrind(target.path())?;
-    if report.len() >= 1 {
-        for error in report {
-            println!(
-                "{:>12} Leaked {} bytes",
-                "Error".red().bold(),
-                error.leaked_bytes()
-            );
-            let mut info = Some("Info".cyan().bold());
-            for function in error.back_trace() {
-                println!("{:>12} at {}", info.take().unwrap_or_default(), function);
-            }
-        }
-        Ok(Report::ContainsErrors)
-    } else {
-        Ok(Report::NoErrorDetected)
-    }
+    analyze_target(&target, &manifest)
 }
 
 fn main() {
