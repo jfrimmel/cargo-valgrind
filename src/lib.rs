@@ -134,7 +134,7 @@ pub fn build_target<P: AsRef<Path>>(
     if let Build::Release = build {
         cmd.arg("--release");
     }
-    cmd.arg("--manifest-paths");
+    cmd.arg("--manifest-path");
     cmd.arg(manifest.as_ref());
     match target {
         Target::Binary(_) => cmd.arg("--bin"),
