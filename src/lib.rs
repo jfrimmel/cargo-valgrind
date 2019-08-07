@@ -47,6 +47,62 @@ pub enum Target {
     /// A test with the given name.
     Test(PathBuf),
 }
+impl Target {
+    /// Query the path to the target binary.
+    pub fn path(&self) -> &Path {
+        match self {
+            Target::Binary(path)
+            | Target::Example(path)
+            | Target::Benchmark(path)
+            | Target::Test(path) => path.as_path(),
+        }
+    }
+
+    /// Query the name of the target binary.
+    ///
+    /// # Panics
+    /// This method panics, if either the path has no file name, i.e. it is
+    /// empty or the file name contains invalid UTF-8.
+    pub fn name(&self) -> &str {
+        self.path()
+            .file_name()
+            .expect("binary has no name")
+            .to_str()
+            .expect("binary name contained invalid UTF-8")
+    }
+
+    /// Query, if the target is an ordinary binary.
+    pub fn is_binary(&self) -> bool {
+        match self {
+            Target::Binary(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Query, if the target is an example binary.
+    pub fn is_example(&self) -> bool {
+        match self {
+            Target::Example(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Query, if the target is a benchmark binary.
+    pub fn is_benchmark(&self) -> bool {
+        match self {
+            Target::Benchmark(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Query, if the target is a test binary.
+    pub fn is_test(&self) -> bool {
+        match self {
+            Target::Test(_) => true,
+            _ => false,
+        }
+    }
+}
 
 /// Invoke `cargo` and build the specified target.
 ///
