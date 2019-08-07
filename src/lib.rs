@@ -36,7 +36,7 @@ impl AsRef<Path> for Build {
 }
 
 /// The possible targets to build and run within valgrind.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Eq, Hash)]
 pub enum Target {
     /// A normal binary with the given name.
     Binary(PathBuf),
@@ -101,6 +101,18 @@ impl Target {
             Target::Test(_) => true,
             _ => false,
         }
+    }
+}
+impl std::cmp::PartialEq for Target {
+    fn eq(&self, other: &Target) -> bool {
+        self.name() == other.name()
+            && match (self, other) {
+                (Target::Binary(_), Target::Binary(_))
+                | (Target::Example(_), Target::Example(_))
+                | (Target::Benchmark(_), Target::Benchmark(_))
+                | (Target::Test(_), Target::Test(_)) => true,
+                _ => false,
+            }
     }
 }
 
