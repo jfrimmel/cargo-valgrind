@@ -1,5 +1,5 @@
 use cargo_valgrind::{build_target, targets, valgrind, Build, Leak, Target};
-use clap::{crate_authors, crate_name, crate_version, App, Arg, ArgMatches};
+use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
 use std::path::{Path, PathBuf};
 
@@ -20,45 +20,50 @@ enum Report {
 /// (selected via the `--release` flag) as well as the selection of the target
 /// to execute. Currently binaries, examples and benches are supported.
 fn cli<'a, 'b>() -> App<'a, 'b> {
-    App::new(crate_name!())
-        .about("Cargo subcommand for running valgrind")
-        .author(crate_authors!())
+    App::new("cargo valgrind")
         .version(crate_version!())
-        .arg(
-            Arg::with_name("release")
-                .help("Build and run artifacts in release mode, with optimizations")
-                .long("release"),
-        )
-        .arg(
-            Arg::with_name("bin")
-                .help("Build and run the specified binary")
-                .long("bin")
-                .takes_value(true)
-                .value_name("NAME")
-                .conflicts_with_all(&["example", "bench"]),
-        )
-        .arg(
-            Arg::with_name("example")
-                .help("Build and run the specified example")
-                .long("example")
-                .takes_value(true)
-                .value_name("NAME")
-                .conflicts_with_all(&["bin", "bench"]),
-        )
-        .arg(
-            Arg::with_name("bench")
-                .help("Build and run the specified bench")
-                .long("bench")
-                .takes_value(true)
-                .value_name("NAME")
-                .conflicts_with_all(&["bin", "example"]),
-        )
-        .arg(
-            Arg::with_name("manifest")
-                .help("Path to Cargo.toml")
-                .long("manifest-path")
-                .takes_value(true)
-                .value_name("PATH"),
+        .bin_name("cargo")
+        .settings(&[AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
+        .subcommand(
+            SubCommand::with_name("valgrind")
+                .about("Cargo subcommand for running valgrind")
+                .author(crate_authors!())
+                .arg(
+                    Arg::with_name("release")
+                        .help("Build and run artifacts in release mode, with optimizations")
+                        .long("release"),
+                )
+                .arg(
+                    Arg::with_name("bin")
+                        .help("Build and run the specified binary")
+                        .long("bin")
+                        .takes_value(true)
+                        .value_name("NAME")
+                        .conflicts_with_all(&["example", "bench"]),
+                )
+                .arg(
+                    Arg::with_name("example")
+                        .help("Build and run the specified example")
+                        .long("example")
+                        .takes_value(true)
+                        .value_name("NAME")
+                        .conflicts_with_all(&["bin", "bench"]),
+                )
+                .arg(
+                    Arg::with_name("bench")
+                        .help("Build and run the specified bench")
+                        .long("bench")
+                        .takes_value(true)
+                        .value_name("NAME")
+                        .conflicts_with_all(&["bin", "example"]),
+                )
+                .arg(
+                    Arg::with_name("manifest")
+                        .help("Path to Cargo.toml")
+                        .long("manifest-path")
+                        .takes_value(true)
+                        .value_name("PATH"),
+                ),
         )
 }
 
@@ -158,6 +163,7 @@ fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
 
 fn run() -> Result<Report> {
     let cli = cli().get_matches();
+    let cli = cli.subcommand_matches("valgrind").unwrap();
     let build = build_type(&cli);
     let target = specified_target(&cli);
     let manifest = manifest(&cli)?;
