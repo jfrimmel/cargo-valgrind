@@ -31,8 +31,8 @@ fn multiple_binaries_are_supported() {
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
         vec![
-            PathBuf::from("test-dir/debug/a binary"),
-            PathBuf::from("test-dir/debug/another binary"),
+            crate::Target::Binary(PathBuf::from("test-dir/debug/a binary")),
+            crate::Target::Binary(PathBuf::from("test-dir/debug/another binary")),
         ]
     );
 }
@@ -55,7 +55,9 @@ fn examples_are_supported() {
     };
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
-        vec![PathBuf::from("test-dir/debug/examples/an example")]
+        vec![crate::Target::Example(PathBuf::from(
+            "test-dir/debug/examples/an example"
+        ))]
     );
 }
 
@@ -77,7 +79,9 @@ fn benches_are_supported() {
     };
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
-        vec![PathBuf::from("test-dir/debug/benches/a benchmark")]
+        vec![crate::Target::Benchmark(PathBuf::from(
+            "test-dir/debug/benches/a benchmark"
+        ))]
     );
 }
 
@@ -121,7 +125,7 @@ fn libraries_are_ignored() {
     };
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
-        Vec::<PathBuf>::new()
+        Vec::<_>::new()
     );
 }
 
@@ -143,7 +147,7 @@ fn proc_macros_are_ignored() {
     };
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
-        Vec::<PathBuf>::new()
+        Vec::<_>::new()
     );
 }
 
@@ -184,8 +188,8 @@ fn only_binaries_of_manifest_are_returned() {
     assert_eq!(
         binaries_from(metadata, manifest, Build::Debug).unwrap(),
         vec![
-            PathBuf::from("test-dir/debug/a binary"),
-            PathBuf::from("test-dir/debug/another binary"),
+            crate::Target::Binary(PathBuf::from("test-dir/debug/a binary")),
+            crate::Target::Binary(PathBuf::from("test-dir/debug/another binary")),
         ]
     );
 }

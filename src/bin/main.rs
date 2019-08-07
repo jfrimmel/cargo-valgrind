@@ -1,7 +1,18 @@
-use cargo_valgrind::{binaries, build_target, valgrind, Build, Target};
-use clap::{crate_authors, crate_name, crate_version, App, Arg};
+use cargo_valgrind::{build_target, targets, valgrind, Build, Leak, Target};
+use clap::{crate_authors, crate_name, crate_version, App, Arg, ArgMatches};
 use colored::Colorize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// The Result type for this application.
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+/// The result of the valgrind run.
+enum Report {
+    /// The analyzed binary contains leaks.
+    ContainsErrors,
+    /// There was no error detected in the analyzed binary.
+    NoErrorDetected,
+}
 
 /// Build the command line interface.
 ///
@@ -51,64 +62,116 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-fn run() -> Result<bool, Box<dyn std::error::Error>> {
-    let cli = cli().get_matches();
-    let build = if cli.is_present("release") {
+/// Query the build type (debug/release) from the the command line parameters.
+fn build_type(parameters: &ArgMatches) -> Build {
+    if parameters.is_present("release") {
         Build::Release
     } else {
         Build::Debug
-    };
-    let binary = cli
-        .value_of("bin")
-        .or(cli.value_of("example"))
-        .or(cli.value_of("bench"));
-    let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
-    let manifest = PathBuf::from(manifest).canonicalize()?;
+    }
+}
 
-    let binaries = binaries(&manifest, build)?;
-    let binary = match binary {
-        Some(path) => PathBuf::from(path),
-        None if binaries.len() == 1 => PathBuf::from(&binaries[0]),
+/// Query the path to the `Cargo.toml` from the the command line parameters.
+///
+/// This defaults to the current directory, if the `--manifest-path` parameter
+/// is not given.
+///
+/// # Errors
+/// This function fails, if the specified path is not valid.
+fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
+    let manifest = parameters
+        .value_of("manifest")
+        .unwrap_or("Cargo.toml".into());
+    let manifest = PathBuf::from(manifest).canonicalize()?;
+    Ok(manifest)
+}
+
+/// Query the specified `Target`, if any.
+fn specified_target(parameters: &ArgMatches) -> Option<Target> {
+    parameters
+        .value_of("bin")
+        .map(|path| Target::Binary(PathBuf::from(path)))
+        .or(parameters
+            .value_of("example")
+            .map(|path| Target::Example(PathBuf::from(path))))
+        .or(parameters
+            .value_of("bench")
+            .map(|path| Target::Benchmark(PathBuf::from(path))))
+}
+
+/// Search for the actual binary to analyze.
+///
+/// This function takes the output of `specified_target()`, as well as the list
+/// of all possible targets returned by `targets()`. It searches, if the
+/// requested binary exists. If no binary was specified and there is only one
+/// target available, that target is used.
+///
+/// # Errors
+/// This function returns an error, if there is no target specified and there
+/// are multiple targets to choose from, or if the user specified a non-existing
+/// target.
+fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> {
+    let target = match specified {
+        Some(path) => path,
+        None if targets.len() == 1 => targets[0].clone(),
         None => Err("Multiple possible targets, please specify more precise")?,
     };
-    let binary = binaries
+    let target = targets
         .into_iter()
-        .find(|path| path.file_name() == binary.file_name())
+        .find(|path| path.name() == target.name())
+        .cloned()
         .ok_or("Could not find selected binary")?;
-    let target = binary.file_name().unwrap().into();
-    let target = Target::Binary(target); // FIXME: use correct variant
-    let crate_root = manifest.parent().unwrap();
-    let target_path = binary
+    Ok(target)
+}
+
+/// Display a single `Leak` to the console.
+fn display_error(leak: Leak) {
+    println!(
+        "{:>12} Leaked {} bytes",
+        "Error".red().bold(),
+        leak.leaked_bytes()
+    );
+    let mut info = Some("Info".cyan().bold());
+    for function in leak.back_trace() {
+        println!("{:>12} at {}", info.take().unwrap_or_default(), function);
+    }
+}
+
+/// Run the specified target inside of valgrind and print the output.
+fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
+    let crate_root = manifest.parent().ok_or("Invalid empty manifest path")?;
+    let target_path = target
+        .path()
         .strip_prefix(crate_root)
         .map(|path| path.display().to_string())
         .unwrap_or_default();
-
-    build_target(&manifest, build, target)?;
     println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    let report = valgrind(&binary)?;
-    if report.len() >= 1 {
-        for error in report {
-            println!(
-                "{:>12} Leaked {} bytes",
-                "Error".red().bold(),
-                error.leaked_bytes()
-            );
-            let mut info = Some("Info".cyan().bold());
-            for function in error.back_trace() {
-                println!("{:>12} at {}", info.take().unwrap_or_default(), function);
-            }
-        }
-        Ok(false)
+    let errors = valgrind(target.path())?;
+    if errors.is_empty() {
+        Ok(Report::NoErrorDetected)
     } else {
-        Ok(true)
+        errors.into_iter().for_each(display_error);
+        Ok(Report::ContainsErrors)
     }
+}
+
+fn run() -> Result<Report> {
+    let cli = cli().get_matches();
+    let build = build_type(&cli);
+    let target = specified_target(&cli);
+    let manifest = manifest(&cli)?;
+
+    let targets = targets(&manifest, build)?;
+    let target = find_target(target, &targets)?;
+    build_target(&manifest, build, target.clone())?;
+    analyze_target(&target, &manifest)
 }
 
 fn main() {
     match run() {
-        Ok(true) => {}
-        Ok(false) => std::process::exit(1),
+        Ok(Report::NoErrorDetected) => {}
+        Ok(Report::ContainsErrors) => std::process::exit(1),
         Err(e) => {
             eprintln!("{} {}", "error:".red().bold(), e);
             std::process::exit(1);
