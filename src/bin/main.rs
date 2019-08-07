@@ -3,6 +3,9 @@ use clap::{crate_authors, crate_name, crate_version, App, Arg, ArgMatches};
 use colored::Colorize;
 use std::path::PathBuf;
 
+/// The Result type for this application.
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
 /// Build the command line interface.
 ///
 /// The CLI currently supports the distinction between debug and release builds
@@ -67,11 +70,12 @@ fn build_type(parameters: &ArgMatches) -> Build {
 ///
 /// # Errors
 /// This function fails, if the specified path is not valid.
-fn manifest(parameters: &ArgMatches) -> std::io::Result<PathBuf> {
+fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
     let manifest = parameters
         .value_of("manifest")
         .unwrap_or("Cargo.toml".into());
-    PathBuf::from(manifest).canonicalize()
+    let manifest = PathBuf::from(manifest).canonicalize()?;
+    Ok(manifest)
 }
 
 /// Query the specified `Target`, if any.
@@ -87,33 +91,39 @@ fn specified_target(parameters: &ArgMatches) -> Option<Target> {
             .map(|path| Target::Benchmark(PathBuf::from(path))))
 }
 
-fn run() -> Result<bool, Box<dyn std::error::Error>> {
+fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> {
+    let target = match specified {
+        Some(path) => path,
+        None if targets.len() == 1 => targets[0].clone(),
+        None => Err("Multiple possible targets, please specify more precise")?,
+    };
+    let target = targets
+        .into_iter()
+        .find(|path| path.name() == target.name())
+        .cloned()
+        .ok_or("Could not find selected binary")?;
+    Ok(target)
+}
+
+fn run() -> Result<bool> {
     let cli = cli().get_matches();
     let build = build_type(&cli);
     let target = specified_target(&cli);
     let manifest = manifest(&cli)?;
 
     let targets = targets(&manifest, build)?;
-    let binary = match target {
-        Some(path) => path,
-        None if targets.len() == 1 => targets[0].clone(),
-        None => Err("Multiple possible targets, please specify more precise")?,
-    };
-    let binary = targets
-        .into_iter()
-        .find(|path| path.name() == binary.name())
-        .ok_or("Could not find selected binary")?;
+    let target = find_target(target, &targets)?;
+    build_target(&manifest, build, target.clone())?;
+
     let crate_root = manifest.parent().unwrap();
-    let target_path = binary
+    let target_path = target
         .path()
         .strip_prefix(crate_root)
         .map(|path| path.display().to_string())
         .unwrap_or_default();
-
-    build_target(&manifest, build, binary.clone())?;
     println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    let report = valgrind(binary.path())?;
+    let report = valgrind(target.path())?;
     if report.len() >= 1 {
         for error in report {
             println!(
