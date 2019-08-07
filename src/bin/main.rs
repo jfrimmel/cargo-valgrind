@@ -99,6 +99,17 @@ fn specified_target(parameters: &ArgMatches) -> Option<Target> {
             .map(|path| Target::Benchmark(PathBuf::from(path))))
 }
 
+/// Search for the actual binary to analyze.
+///
+/// This function takes the output of `specified_target()`, as well as the list
+/// of all possible targets returned by `targets()`. It searches, if the
+/// requested binary exists. If no binary was specified and there is only one
+/// target available, that target is used.
+///
+/// # Errors
+/// This function returns an error, if there is no target specified and there
+/// are multiple targets to choose from, or if the user specified a non-existing
+/// target.
 fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> {
     let target = match specified {
         Some(path) => path,
