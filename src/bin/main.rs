@@ -1,4 +1,4 @@
-use cargo_valgrind::{targets, build_target, valgrind, Build, Target};
+use cargo_valgrind::{build_target, targets, valgrind, Build, Target};
 use clap::{crate_authors, crate_name, crate_version, App, Arg};
 use colored::Colorize;
 use std::path::PathBuf;
@@ -61,10 +61,12 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     let binary = cli
         .value_of("bin")
         .map(|path| Target::Binary(PathBuf::from(path)))
-        .or(cli.value_of("example")
-        .map(|path| Target::Example(PathBuf::from(path))))
-        .or(cli.value_of("bench")
-        .map(|path| Target::Benchmark(PathBuf::from(path))));
+        .or(cli
+            .value_of("example")
+            .map(|path| Target::Example(PathBuf::from(path))))
+        .or(cli
+            .value_of("bench")
+            .map(|path| Target::Benchmark(PathBuf::from(path))));
     let manifest = cli.value_of("manifest").unwrap_or("Cargo.toml".into());
     let manifest = PathBuf::from(manifest).canonicalize()?;
 
