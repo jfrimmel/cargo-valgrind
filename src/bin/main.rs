@@ -119,7 +119,24 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     let target = match specified {
         Some(path) => path,
         None if targets.len() == 1 => targets[0].clone(),
-        None => Err("Multiple possible targets, please specify more precise")?,
+        None => {
+            let mut error = String::from("Multiple possible targets, please specify one of:\n");
+            for target in targets {
+                let flag = if target.is_binary() {
+                    "bin"
+                } else if target.is_example() {
+                    "example"
+                } else if target.is_benchmark() {
+                    "bench"
+                } else if target.is_test() {
+                    "test"
+                } else {
+                    unreachable!();
+                };
+                error += &format!("--{} {}\n", flag, target.name());
+            }
+            Err(error)?
+        }
     };
     let target = targets
         .into_iter()
