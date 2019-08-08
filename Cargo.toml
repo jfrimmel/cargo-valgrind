@@ -6,6 +6,7 @@ edition = "2018"
 description = "A cargo subcommand for running valgrind"
 repository = "https://github.com/jfrimmel/cargo-valgrind"
 readme = "README.md"
+license = "MIT OR Apache-2.0"
 keywords = [
     "cargo",
     "subcomand",
