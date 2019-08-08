@@ -161,9 +161,9 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
 /// Display a single `Leak` to the console.
 fn display_error(leak: Leak) {
     println!(
-        "{:>12} Leaked {} bytes",
+        "{:>12} Leaked {}",
         "Error".red().bold(),
-        leak.leaked_bytes()
+        bytesize::to_string(leak.leaked_bytes() as _, true)
     );
     let mut info = Some("Info".cyan().bold());
     for function in leak.back_trace() {
