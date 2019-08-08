@@ -7,6 +7,7 @@ The output of valgrind is then used to mark the binary as pass/fail.
 This command should not be necessary for ordinary Rust programs, especially if you are only using safe Rust code.
 But if you do FFI-related stuff (either by simply using a FFI-binding crate or because you are developing a safe wrapper for such FFI bindings) it may be really helpful to check, whether the memory usages across the FFI borders are correct.
 
+## Usage
 A typical mistake would be:
 ```rust
 use std::ffi::CString;
@@ -26,7 +27,7 @@ fn main() {
 }
 ```
 The memory of the variable `string` will never be freed.
-`cargo valgrind` detects it:
+If you run `cargo valgrind` it your shell, it detects the leak:
 ```bash
 $ cargo valgrind
     Finished dev [unoptimized + debuginfo] target(s) in 0.01s
@@ -63,7 +64,13 @@ You need to have `valgrind` installed and in the `PATH` (you can test this by ru
 You'll also need to have `cargo` installed and in the `PATH`, but since this is a cargo subcommand, you will almost certainly have it already installed.
 
 ## Install the binary
-Run the following command:
+Run the following command to install from [crates.io](https://crates.io/crates/cargo-valgrind):
+```bash
+$ cargo install cargo-valgrind
 ```
-cargo install --git https://github.com/jfrimmel/cargo-valgrind
+This will install the latest official released version.
+
+If you want to use the latest changes, that were not yet published to `crates.io`, you can install the binary from the git-repository like this:
+```bash
+$ cargo install --git https://github.com/jfrimmel/cargo-valgrind
 ```
