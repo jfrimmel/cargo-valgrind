@@ -63,6 +63,13 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("manifest-path")
                         .takes_value(true)
                         .value_name("PATH"),
+                )
+                .arg(
+                    Arg::with_name("features")
+                        .help("Space-separated list of features to activate")
+                        .long("features")
+                        .takes_value(true)
+                        .value_name("FEATURES"),
                 ),
         )
 }
@@ -89,6 +96,15 @@ fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
         .unwrap_or("Cargo.toml".into());
     let manifest = PathBuf::from(manifest).canonicalize()?;
     Ok(manifest)
+}
+
+/// Query the enabled features.
+fn features<'a>(parameters: &'a ArgMatches) -> impl Iterator<Item = String> + 'a {
+    parameters
+        .value_of("features")
+        .into_iter()
+        .flat_map(|features| features.split(" "))
+        .map(|feature| feature.into())
 }
 
 /// Query the specified `Target`, if any.
@@ -196,6 +212,7 @@ fn run() -> Result<Report> {
     let build = build_type(&cli);
     let target = specified_target(&cli);
     let manifest = manifest(&cli)?;
+    let features = features(&cli);
 
     let targets = targets(&manifest, build)?;
     let target = find_target(target, &targets)?;
@@ -203,6 +220,7 @@ fn run() -> Result<Report> {
         .with_manifest(&manifest)
         .with_build_target(target.clone())
         .with_build_type(build)
+        .with_features(features)
         .build()?;
     analyze_target(&target, &manifest)
 }
