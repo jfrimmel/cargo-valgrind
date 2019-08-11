@@ -1,6 +1,6 @@
 [package]
 name = "cargo-valgrind"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
 edition = "2018"
 description = "A cargo subcommand for running valgrind"
@@ -17,6 +17,9 @@ keywords = [
 categories = [
     "development-tools",
     "development-tools::cargo-plugins",
+]
+exclude = [
+    "CHANGELOG.md",
 ]
 
 [[bin]]
