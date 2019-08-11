@@ -240,6 +240,7 @@ pub mod cargo_config {
     use super::{Build, Cargo, Target};
     use std::path::{Path, PathBuf};
 
+    /// A `Cargo` instance while configuring its manifest path.
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct Manifest(());
     impl Manifest {
@@ -247,17 +248,20 @@ pub mod cargo_config {
             Self(())
         }
 
+        /// Specify the path to the `Cargo.toml` to use.
         pub fn manifest<P: AsRef<Path>>(self, manifest: P) -> BuildTarget {
             let manifest = manifest.as_ref().into();
             BuildTarget { manifest }
         }
     }
 
+    /// A `Cargo` instance while configuring the target binary.
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct BuildTarget {
         manifest: PathBuf,
     }
     impl BuildTarget {
+        /// Select the build target.
         pub fn build_target(self, target: Target) -> BuildType {
             BuildType {
                 manifest: self.manifest,
@@ -266,12 +270,14 @@ pub mod cargo_config {
         }
     }
 
+    /// A `Cargo` instance while configuring the target build type.
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct BuildType {
         manifest: PathBuf,
         target: Target,
     }
     impl BuildType {
+        /// Select the build type.
         pub fn build_type(self, build: Build) -> Cargo {
             Cargo {
                 manifest: self.manifest,
@@ -281,10 +287,12 @@ pub mod cargo_config {
             }
         }
 
+        /// Make a debug build.
         pub fn debug_build(self) -> Cargo {
             self.build_type(Build::Debug)
         }
 
+        /// Make a release build.
         pub fn release_build(self) -> Cargo {
             self.build_type(Build::Release)
         }
