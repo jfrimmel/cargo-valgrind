@@ -163,6 +163,8 @@ pub struct Cargo {
     build: Build,
     /// The target binary.
     target: Target,
+    /// Enabled features.
+    features: Vec<String>,
 }
 impl Cargo {
     /// Start configuring the cargo command that will build the selected target.
@@ -196,6 +198,10 @@ impl Cargo {
             Target::Test(_) => cmd.arg("--test"),
         };
         cmd.arg(self.target.name());
+        if !self.features.is_empty() {
+            cmd.arg("--features");
+            cmd.arg(self.features.join(" "));
+        }
         cmd.spawn()?.wait_with_output().and_then(|output| {
             if output.status.success() {
                 Ok(())
@@ -203,6 +209,28 @@ impl Cargo {
                 Err(cargo_error(output))
             }
         })
+    }
+
+    /// Build the target with a specific feature enabled.
+    ///
+    /// This function can be called multiple times to build with multiple
+    /// features enabled.
+    pub fn with_feature<S: Into<String>>(self, feature: S) -> Self {
+        self.with_features(Some(feature))
+    }
+
+    /// Build the target with specific features enabled.
+    ///
+    /// This function can be called multiple times and mixed with the
+    /// `with_feature()` method.
+    pub fn with_features<S, I>(mut self, features: I) -> Self
+    where
+        S: Into<String>,
+        I: IntoIterator<Item = S>,
+    {
+        let features = features.into_iter().map(|feature| feature.into());
+        self.features.extend(features);
+        self
     }
 }
 
@@ -248,6 +276,7 @@ pub mod cargo_config {
                 manifest: self.manifest,
                 target: self.target,
                 build,
+                features: vec![],
             }
         }
 
