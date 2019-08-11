@@ -1,4 +1,4 @@
-use cargo_valgrind::{build_target, targets, valgrind, Build, Leak, Target};
+use cargo_valgrind::{targets, valgrind, Build, Cargo, Leak, Target};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
 use std::path::{Path, PathBuf};
@@ -63,6 +63,13 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("manifest-path")
                         .takes_value(true)
                         .value_name("PATH"),
+                )
+                .arg(
+                    Arg::with_name("features")
+                        .help("Space-separated list of features to activate")
+                        .long("features")
+                        .takes_value(true)
+                        .value_name("FEATURES"),
                 ),
         )
 }
@@ -89,6 +96,15 @@ fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
         .unwrap_or("Cargo.toml".into());
     let manifest = PathBuf::from(manifest).canonicalize()?;
     Ok(manifest)
+}
+
+/// Query the enabled features.
+fn features<'a>(parameters: &'a ArgMatches) -> impl Iterator<Item = String> + 'a {
+    parameters
+        .value_of("features")
+        .into_iter()
+        .flat_map(|features| features.split(" "))
+        .map(|feature| feature.into())
 }
 
 /// Query the specified `Target`, if any.
@@ -196,10 +212,16 @@ fn run() -> Result<Report> {
     let build = build_type(&cli);
     let target = specified_target(&cli);
     let manifest = manifest(&cli)?;
+    let features = features(&cli);
 
     let targets = targets(&manifest, build)?;
     let target = find_target(target, &targets)?;
-    build_target(&manifest, build, target.clone())?;
+    Cargo::new()
+        .manifest(&manifest)
+        .build_target(target.clone())
+        .build_type(build)
+        .features(features)
+        .build()?;
     analyze_target(&target, &manifest)
 }
 

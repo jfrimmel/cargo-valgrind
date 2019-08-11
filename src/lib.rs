@@ -124,6 +124,7 @@ impl std::cmp::PartialEq for Target {
 ///
 /// # Errors
 /// This function returns an error, if the `cargo command returned an error`.
+#[deprecated(since = "1.1.0", note = "Use the more flexible `Cargo` type instead")]
 pub fn build_target<P: AsRef<Path>>(
     manifest: P,
     build: Build,
@@ -150,6 +151,152 @@ pub fn build_target<P: AsRef<Path>>(
             Err(cargo_error(output))
         }
     })
+}
+
+/// A `cargo` build command.
+///
+/// This type acts as a sentinel for a `cargo build` process. It allows the
+/// configuration via the `new()` function in a builder pattern style.
+pub struct Cargo {
+    /// The path to the manifest (`Cargo.toml`).
+    manifest: PathBuf,
+    /// The build type (debug or release).
+    build: Build,
+    /// The target binary.
+    target: Target,
+    /// Enabled features.
+    features: Vec<String>,
+}
+impl Cargo {
+    /// Start configuring the cargo command that will build the selected target.
+    pub fn new() -> cargo_config::Manifest {
+        cargo_config::Manifest::new()
+    }
+
+    /// Build the selected target with the previously specified configuration.
+    ///
+    /// This invokes `cargo` and builds the specified target. The crate is
+    /// specified by the path to the `Cargo.toml` using the `manifest` field.
+    /// The kind of build (debug or release) is selected via the `build` field.
+    /// The binary to build is specified via the `target` field.
+    ///
+    /// # Errors
+    /// This function returns an error, if the `cargo` command returned an
+    /// error, e.g. because the manifest could not be found or a target is not
+    /// available.
+    pub fn build(&self) -> Result<(), Error> {
+        let mut cmd = Command::new("cargo");
+        cmd.arg("build");
+        if let Build::Release = self.build {
+            cmd.arg("--release");
+        }
+        cmd.arg("--manifest-path");
+        cmd.arg(self.manifest.as_path());
+        match self.target {
+            Target::Binary(_) => cmd.arg("--bin"),
+            Target::Example(_) => cmd.arg("--example"),
+            Target::Benchmark(_) => cmd.arg("--bench"),
+            Target::Test(_) => cmd.arg("--test"),
+        };
+        cmd.arg(self.target.name());
+        if !self.features.is_empty() {
+            cmd.arg("--features");
+            cmd.arg(self.features.join(" "));
+        }
+        cmd.spawn()?.wait_with_output().and_then(|output| {
+            if output.status.success() {
+                Ok(())
+            } else {
+                Err(cargo_error(output))
+            }
+        })
+    }
+
+    /// Build the target with a specific feature enabled.
+    ///
+    /// This function can be called multiple times to build with multiple
+    /// features enabled.
+    pub fn feature<S: Into<String>>(self, feature: S) -> Self {
+        self.features(Some(feature))
+    }
+
+    /// Build the target with specific features enabled.
+    ///
+    /// This function can be called multiple times and mixed with the
+    /// `feature()` method.
+    pub fn features<S, I>(mut self, features: I) -> Self
+    where
+        S: Into<String>,
+        I: IntoIterator<Item = S>,
+    {
+        let features = features.into_iter().map(|feature| feature.into());
+        self.features.extend(features);
+        self
+    }
+}
+
+pub mod cargo_config {
+    //! A module containing the builder pattern types for configuring a `Cargo`.
+    use super::{Build, Cargo, Target};
+    use std::path::{Path, PathBuf};
+
+    /// A `Cargo` instance while configuring its manifest path.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct Manifest(());
+    impl Manifest {
+        pub(super) fn new() -> Self {
+            Self(())
+        }
+
+        /// Specify the path to the `Cargo.toml` to use.
+        pub fn manifest<P: AsRef<Path>>(self, manifest: P) -> BuildTarget {
+            let manifest = manifest.as_ref().into();
+            BuildTarget { manifest }
+        }
+    }
+
+    /// A `Cargo` instance while configuring the target binary.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct BuildTarget {
+        manifest: PathBuf,
+    }
+    impl BuildTarget {
+        /// Select the build target.
+        pub fn build_target(self, target: Target) -> BuildType {
+            BuildType {
+                manifest: self.manifest,
+                target,
+            }
+        }
+    }
+
+    /// A `Cargo` instance while configuring the target build type.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct BuildType {
+        manifest: PathBuf,
+        target: Target,
+    }
+    impl BuildType {
+        /// Select the build type.
+        pub fn build_type(self, build: Build) -> Cargo {
+            Cargo {
+                manifest: self.manifest,
+                target: self.target,
+                build,
+                features: vec![],
+            }
+        }
+
+        /// Make a debug build.
+        pub fn debug_build(self) -> Cargo {
+            self.build_type(Build::Debug)
+        }
+
+        /// Make a release build.
+        pub fn release_build(self) -> Cargo {
+            self.build_type(Build::Release)
+        }
+    }
 }
 
 /// Run the program denoted by `path` in valgrind.
