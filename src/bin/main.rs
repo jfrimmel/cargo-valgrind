@@ -1,4 +1,4 @@
-use cargo_valgrind::{build_target, targets, valgrind, Build, Leak, Target};
+use cargo_valgrind::{targets, valgrind, Build, Cargo, Leak, Target};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
 use std::path::{Path, PathBuf};
@@ -199,7 +199,11 @@ fn run() -> Result<Report> {
 
     let targets = targets(&manifest, build)?;
     let target = find_target(target, &targets)?;
-    build_target(&manifest, build, target.clone())?;
+    Cargo::new()
+        .with_manifest(&manifest)
+        .with_build_target(target.clone())
+        .with_build_type(build)
+        .build()?;
     analyze_target(&target, &manifest)
 }
 
