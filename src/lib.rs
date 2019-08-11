@@ -124,6 +124,7 @@ impl std::cmp::PartialEq for Target {
 ///
 /// # Errors
 /// This function returns an error, if the `cargo command returned an error`.
+#[deprecated(note = "Use the more flexible `Cargo` type instead")]
 pub fn build_target<P: AsRef<Path>>(
     manifest: P,
     build: Build,
