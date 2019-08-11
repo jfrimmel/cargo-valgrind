@@ -217,10 +217,10 @@ fn run() -> Result<Report> {
     let targets = targets(&manifest, build)?;
     let target = find_target(target, &targets)?;
     Cargo::new()
-        .with_manifest(&manifest)
-        .with_build_target(target.clone())
-        .with_build_type(build)
-        .with_features(features)
+        .manifest(&manifest)
+        .build_target(target.clone())
+        .build_type(build)
+        .features(features)
         .build()?;
     analyze_target(&target, &manifest)
 }

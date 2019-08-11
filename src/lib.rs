@@ -215,15 +215,15 @@ impl Cargo {
     ///
     /// This function can be called multiple times to build with multiple
     /// features enabled.
-    pub fn with_feature<S: Into<String>>(self, feature: S) -> Self {
-        self.with_features(Some(feature))
+    pub fn feature<S: Into<String>>(self, feature: S) -> Self {
+        self.features(Some(feature))
     }
 
     /// Build the target with specific features enabled.
     ///
     /// This function can be called multiple times and mixed with the
-    /// `with_feature()` method.
-    pub fn with_features<S, I>(mut self, features: I) -> Self
+    /// `feature()` method.
+    pub fn features<S, I>(mut self, features: I) -> Self
     where
         S: Into<String>,
         I: IntoIterator<Item = S>,
@@ -246,7 +246,7 @@ pub mod cargo_config {
             Self(())
         }
 
-        pub fn with_manifest<P: AsRef<Path>>(self, manifest: P) -> BuildTarget {
+        pub fn manifest<P: AsRef<Path>>(self, manifest: P) -> BuildTarget {
             let manifest = manifest.as_ref().into();
             BuildTarget { manifest }
         }
@@ -257,7 +257,7 @@ pub mod cargo_config {
         manifest: PathBuf,
     }
     impl BuildTarget {
-        pub fn with_build_target(self, target: Target) -> BuildType {
+        pub fn build_target(self, target: Target) -> BuildType {
             BuildType {
                 manifest: self.manifest,
                 target,
@@ -271,7 +271,7 @@ pub mod cargo_config {
         target: Target,
     }
     impl BuildType {
-        pub fn with_build_type(self, build: Build) -> Cargo {
+        pub fn build_type(self, build: Build) -> Cargo {
             Cargo {
                 manifest: self.manifest,
                 target: self.target,
@@ -280,12 +280,12 @@ pub mod cargo_config {
             }
         }
 
-        pub fn as_debug_build(self) -> Cargo {
-            self.with_build_type(Build::Debug)
+        pub fn debug_build(self) -> Cargo {
+            self.build_type(Build::Debug)
         }
 
-        pub fn as_release_build(self) -> Cargo {
-            self.with_build_type(Build::Release)
+        pub fn release_build(self) -> Cargo {
+            self.build_type(Build::Release)
         }
     }
 }
