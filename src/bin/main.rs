@@ -201,7 +201,14 @@ fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
     } else {
+        let sum: usize = errors.iter().map(|leak| leak.leaked_bytes()).sum();
         errors.into_iter().for_each(display_error);
+        println!(
+            "{:>12} Leaked {} total",
+            "Summary".red().bold(),
+            bytesize::to_string(sum as _, true)
+        );
+
         Ok(Report::ContainsErrors)
     }
 }
