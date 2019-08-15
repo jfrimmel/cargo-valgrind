@@ -56,6 +56,7 @@ Test
              at std::rt::lang_start_internal (rt.rs:48)
              at std::rt::lang_start (rt.rs:64)
              at main
+     Summary Leaked 5 B total
 ```
 Un-commenting the `unsafe { CString::from_raw(ptr) };` re-takes the memory and frees it correctly.
 `cargo valgrind` will compile the binary for you and won't detect a leak, since there is no leak anymore.
