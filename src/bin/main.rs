@@ -91,9 +91,7 @@ fn build_type(parameters: &ArgMatches) -> Build {
 /// # Errors
 /// This function fails, if the specified path is not valid.
 fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
-    let manifest = parameters
-        .value_of("manifest")
-        .unwrap_or("Cargo.toml".into());
+    let manifest = parameters.value_of("manifest").unwrap_or("Cargo.toml");
     let manifest = PathBuf::from(manifest).canonicalize()?;
     Ok(manifest)
 }
@@ -103,7 +101,7 @@ fn features<'a>(parameters: &'a ArgMatches) -> impl Iterator<Item = String> + 'a
     parameters
         .value_of("features")
         .into_iter()
-        .flat_map(|features| features.split(" "))
+        .flat_map(|features| features.split(' '))
         .map(|feature| feature.into())
 }
 
@@ -112,12 +110,16 @@ fn specified_target(parameters: &ArgMatches) -> Option<Target> {
     parameters
         .value_of("bin")
         .map(|path| Target::Binary(PathBuf::from(path)))
-        .or(parameters
-            .value_of("example")
-            .map(|path| Target::Example(PathBuf::from(path))))
-        .or(parameters
-            .value_of("bench")
-            .map(|path| Target::Benchmark(PathBuf::from(path))))
+        .or_else(|| {
+            parameters
+                .value_of("example")
+                .map(|path| Target::Example(PathBuf::from(path)))
+        })
+        .or_else(|| {
+            parameters
+                .value_of("bench")
+                .map(|path| Target::Benchmark(PathBuf::from(path)))
+        })
 }
 
 /// Search for the actual binary to analyze.
@@ -163,14 +165,16 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
         }
     };
     let target = targets
-        .into_iter()
+        .iter()
         .find(|&path| path == &target)
         .cloned()
-        .ok_or(format!(
-            "Could not find {} target `{}`",
-            target_type(&target).replace("bin", "binary"),
-            target.name()
-        ))?;
+        .ok_or_else(|| {
+            format!(
+                "Could not find {} target `{}`",
+                target_type(&target).replace("bin", "binary"),
+                target.name()
+            )
+        })?;
     Ok(target)
 }
 

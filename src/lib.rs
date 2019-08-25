@@ -36,7 +36,7 @@ impl AsRef<Path> for Build {
 }
 
 /// The possible targets to build and run within valgrind.
-#[derive(Debug, Clone, Eq, Hash)]
+#[derive(Debug, Clone, Eq)]
 pub enum Target {
     /// A normal binary with the given name.
     Binary(PathBuf),
@@ -113,6 +113,12 @@ impl std::cmp::PartialEq for Target {
                 | (Target::Test(_), Target::Test(_)) => true,
                 _ => false,
             }
+    }
+}
+impl std::hash::Hash for Target {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name().hash(state);
+        std::mem::discriminant(self).hash(state);
     }
 }
 
@@ -410,7 +416,7 @@ impl Function {
 }
 impl Display for Function {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.write_str(self.name().as_ref().unwrap_or(&"unknown".into()))?;
+        f.write_str(self.name().as_ref().unwrap_or(&"unknown"))?;
         if let Some(file) = &self.file() {
             f.write_str(" (")?;
             f.write_str(file)?;
