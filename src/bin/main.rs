@@ -70,6 +70,15 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("features")
                         .takes_value(true)
                         .value_name("FEATURES"),
+                )
+                .arg(
+                    Arg::with_name("leak-check")
+                        .help("Select, whether each leak or only a summary should be reported")
+                        .long("leak-check")
+                        .takes_value(true)
+                        .value_name("KIND")
+                        .possible_values(&["summary", "full"])
+                        .default_value("summary"),
                 ),
         )
 }
