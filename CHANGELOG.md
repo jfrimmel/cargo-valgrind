@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.2.0
+- Support the valgrind parameter `--show-leak-kinds=<set>`
+- Support the valgrind parameter `--leak-check=<summary|full>`
+
 ## Version 1.1.2
 - Manually implement `Hash` for `Target`.
   This was previously derived, which was wrong due to the custom `PartialEq`-implementation (refer to the [`Hash` documentation](https://doc.rust-lang.org/std/hash/trait.Hash.html#hash-and-eq)).
