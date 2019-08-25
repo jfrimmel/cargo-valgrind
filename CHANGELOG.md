@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.1.2
+- Manually implement `Hash` for `Target`.
+  This was previously derived, which was wrong due to the custom `PartialEq`-implementation (refer to the [`Hash` documentation](https://doc.rust-lang.org/std/hash/trait.Hash.html#hash-and-eq)).
+
 ## Version 1.1.1
 - Print the total number of leaked bytes as a summary
 
