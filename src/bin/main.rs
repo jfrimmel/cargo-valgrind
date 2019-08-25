@@ -228,7 +228,7 @@ fn display_error(leak: Leak) {
 }
 
 /// Run the specified target inside of valgrind and print the output.
-fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
+fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Result<Report> {
     let crate_root = manifest.parent().ok_or("Invalid empty manifest path")?;
     let target_path = target
         .path()
@@ -237,7 +237,19 @@ fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
         .unwrap_or_default();
     println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    let valgrind = Valgrind::new();
+    let mut valgrind = Valgrind::new();
+    if let Some(kind) = cli.value_of("leak-check") {
+        valgrind.set_leak_check(kind);
+    }
+    match cli.value_of("leak-kinds") {
+        Some("all") => {
+            valgrind.all_leak_kinds();
+        }
+        Some(kinds) => {
+            valgrind.set_leak_kinds(&kinds.split(",").collect::<Vec<_>>());
+        }
+        _ => {}
+    }
     let errors = valgrind.analyze(target.path())?;
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
@@ -270,7 +282,7 @@ fn run() -> Result<Report> {
         .build_type(build)
         .features(features)
         .build()?;
-    analyze_target(&target, &manifest)
+    analyze_target(&cli, &target, &manifest)
 }
 
 fn main() {
