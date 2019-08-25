@@ -79,6 +79,33 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .value_name("KIND")
                         .possible_values(&["summary", "full"])
                         .default_value("summary"),
+                )
+                .arg(
+                    Arg::with_name("leak-kinds")
+                        .help(
+                            "Select, which leak kinds to report (either a \
+                             comma-separated list of `definite`, `indirect`, \
+                             `possible` and `reachable` or `all` or `none`)",
+                        )
+                        .long("show-leak-kinds")
+                        .takes_value(true)
+                        .value_name("set")
+                        .default_value("definite,possible")
+                        .empty_values(false)
+                        .validator(|s| {
+                            if s == "all" || s == "none" {
+                                Ok(())
+                            } else {
+                                s.split(',')
+                                    .find(|&s| {
+                                        s != "definite"
+                                            && s != "indirect"
+                                            && s != "possible"
+                                            && s != "reachable"
+                                    })
+                                    .map_or(Ok(()), |s| Err(s.into()))
+                            }
+                        }),
                 ),
         )
 }
