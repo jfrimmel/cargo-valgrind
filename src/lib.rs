@@ -315,6 +315,10 @@ pub mod cargo_config {
 /// This function returns an error, if valgrind could not be executed
 /// successfully, its output could not be parsed correctly or any other process
 /// related error occurs.
+#[deprecated(
+    since = "1.2.0",
+    note = "Use the more flexible `Valgrind` type instead"
+)]
 pub fn valgrind<P: AsRef<Path>>(path: P) -> Result<Vec<Leak>, Error> {
     Valgrind::new().analyze(path)
 }
