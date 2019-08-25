@@ -373,6 +373,15 @@ impl Valgrind {
             .collect())
     }
 
+    /// Specify, whether all leaks or only a summary should be reported.
+    ///
+    /// Possible values are `"summary"` and `"full"`. Other values will cause
+    /// the valgrind command to fail.
+    pub fn set_leak_check(&mut self, kind: &str) -> &mut Self {
+        self.valgrind.arg(format!("--leak-check={}", kind));
+        self
+    }
+
     /// Run a binary inside `valgrind` and collect the report.
     ///
     /// This function launches a valgrind process, that does full leak checks
