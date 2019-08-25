@@ -1,4 +1,6 @@
 //! A module for deserializing the cargo metadata output.
+#![allow(clippy::missing_docs_in_private_items)]
+
 #[cfg(test)]
 mod tests;
 mod version;

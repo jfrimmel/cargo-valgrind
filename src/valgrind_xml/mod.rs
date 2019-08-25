@@ -6,6 +6,8 @@
 //! Note, that not all fields are implemented.
 //!
 //! [link]: https://github.com/fredericgermain/valgrind/blob/master/docs/internals/xml-output-protocol4.txt
+#![allow(clippy::missing_docs_in_private_items)]
+
 #[cfg(test)]
 mod tests;
 

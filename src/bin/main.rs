@@ -246,7 +246,7 @@ fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Res
             valgrind.all_leak_kinds();
         }
         Some(kinds) => {
-            valgrind.set_leak_kinds(&kinds.split(",").collect::<Vec<_>>());
+            valgrind.set_leak_kinds(&kinds.split(',').collect::<Vec<_>>());
         }
         _ => {}
     }

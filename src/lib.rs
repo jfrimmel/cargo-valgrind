@@ -1,4 +1,21 @@
 //! The core library of the `cargo-valgrind` command.
+#![deny(clippy::correctness)]
+#![warn(
+    clippy::perf,
+    clippy::complexity,
+    clippy::style,
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::clone_on_ref_ptr,
+    clippy::decimal_literal_representation,
+    clippy::float_cmp_const,
+    clippy::missing_docs_in_private_items,
+    clippy::multiple_inherent_impl,
+    clippy::option_unwrap_used,
+    clippy::print_stdout,
+    clippy::result_unwrap_used
+)]
+
 mod metadata;
 #[cfg(test)]
 mod tests;
@@ -104,7 +121,7 @@ impl Target {
     }
 }
 impl std::cmp::PartialEq for Target {
-    fn eq(&self, other: &Target) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.name() == other.name()
             && match (self, other) {
                 (Target::Binary(_), Target::Binary(_))
@@ -131,6 +148,7 @@ impl std::hash::Hash for Target {
 /// # Errors
 /// This function returns an error, if the `cargo command returned an error`.
 #[deprecated(since = "1.1.0", note = "Use the more flexible `Cargo` type instead")]
+#[allow(clippy::needless_pass_by_value)] // cannot change this public API
 pub fn build_target<P: AsRef<Path>>(
     manifest: P,
     build: Build,
@@ -154,7 +172,7 @@ pub fn build_target<P: AsRef<Path>>(
         if output.status.success() {
             Ok(())
         } else {
-            Err(cargo_error(output))
+            Err(cargo_error(&output))
         }
     })
 }
@@ -175,7 +193,8 @@ pub struct Cargo {
 }
 impl Cargo {
     /// Start configuring the cargo command that will build the selected target.
-    pub fn new() -> cargo_config::Manifest {
+    #[allow(clippy::new_ret_no_self)]
+    pub const fn new() -> cargo_config::Manifest {
         cargo_config::Manifest::new()
     }
 
@@ -213,7 +232,7 @@ impl Cargo {
             if output.status.success() {
                 Ok(())
             } else {
-                Err(cargo_error(output))
+                Err(cargo_error(&output))
             }
         })
     }
@@ -235,7 +254,7 @@ impl Cargo {
         S: Into<String>,
         I: IntoIterator<Item = S>,
     {
-        let features = features.into_iter().map(|feature| feature.into());
+        let features = features.into_iter().map(Into::into);
         self.features.extend(features);
         self
     }
@@ -250,7 +269,8 @@ pub mod cargo_config {
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct Manifest(());
     impl Manifest {
-        pub(super) fn new() -> Self {
+        /// Create a new `Manifest` config.
+        pub(super) const fn new() -> Self {
             Self(())
         }
 
@@ -264,6 +284,7 @@ pub mod cargo_config {
     /// A `Cargo` instance while configuring the target binary.
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct BuildTarget {
+        /// The path to the manifest file.
         manifest: PathBuf,
     }
     impl BuildTarget {
@@ -279,7 +300,9 @@ pub mod cargo_config {
     /// A `Cargo` instance while configuring the target build type.
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct BuildType {
+        /// The path to the manifest file.
         manifest: PathBuf,
+        /// The target to build.
         target: Target,
     }
     impl BuildType {
@@ -335,7 +358,7 @@ pub struct Valgrind {
 impl Valgrind {
     /// Start configuring the valgrind command that will analyze the target.
     pub fn new() -> Self {
-        Valgrind {
+        Self {
             valgrind: Command::new("valgrind"),
         }
     }
@@ -430,6 +453,11 @@ impl Valgrind {
         }
     }
 }
+impl Default for Valgrind {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// A single memory leak.
 ///
@@ -446,19 +474,19 @@ pub struct Leak {
 }
 impl Leak {
     /// Query the amount of leaked bytes.
-    pub fn leaked_bytes(&self) -> usize {
+    pub const fn leaked_bytes(&self) -> usize {
         self.bytes
     }
 
     /// Query the kind of the leak.
-    pub fn leak_kind(&self) -> Kind {
+    pub const fn leak_kind(&self) -> Kind {
         self.kind
     }
 
     /// Query the call trace, i.e. the functions, that lead to the leak.
     ///
     /// The functions are in the "most recent call first" order.
-    pub fn back_trace(&self) -> &Vec<Function> {
+    pub const fn back_trace(&self) -> &Vec<Function> {
         &self.stack_trace
     }
 }
@@ -489,7 +517,7 @@ impl Function {
     /// This information may not be present, e.g. if the corresponding object is
     /// built without debug info.
     pub fn name(&self) -> Option<&str> {
-        self.name.as_ref().map(|name| name.as_str())
+        self.name.as_ref().map(String::as_str)
     }
 
     /// Query the name of the file in which the called function was defined.
@@ -497,14 +525,14 @@ impl Function {
     /// This information may not be present, e.g. if the corresponding object is
     /// built without debug info.
     pub fn file(&self) -> Option<&str> {
-        self.file.as_ref().map(|name| name.as_str())
+        self.file.as_ref().map(String::as_str)
     }
 
     /// Query the line of the function of the function call.
     ///
     /// This information may not be present, e.g. if the corresponding object is
     /// built without debug info.
-    pub fn line(&self) -> Option<usize> {
+    pub const fn line(&self) -> Option<usize> {
         self.line
     }
 }
@@ -594,6 +622,7 @@ fn binaries_from<P: AsRef<Path>>(
     build: Build,
 ) -> Result<Vec<Target>, Error> {
     let target_dir = package.target_directory.join(build);
+    #[allow(clippy::filter_map)]
     Ok(package
         .packages
         .into_iter()
@@ -670,12 +699,12 @@ fn cargo_metadata<P: AsRef<Path>>(path: P) -> Result<String, Error> {
         String::from_utf8(output.stdout)
             .map_err(|_| Error::new(ErrorKind::InvalidInput, "Non-UTF-8 string"))
     } else {
-        Err(cargo_error(output))
+        Err(cargo_error(&output))
     }
 }
 
 /// Build an `io::Error` from the stderr text outputted by `cargo`.
-fn cargo_error(output: Output) -> Error {
+fn cargo_error(output: &Output) -> Error {
     let msg = String::from_utf8_lossy(&output.stderr);
     let msg = msg.trim_start_matches("error: ").trim_end();
     if msg.is_empty() {
