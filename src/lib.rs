@@ -382,6 +382,22 @@ impl Valgrind {
         self
     }
 
+    /// Specify the leak kinds to report.
+    ///
+    /// Possible values are `"definite"`, `"possible"`, `"reachable"` and
+    /// `"indirect"`. Other values will cause the valgrind command to fail.
+    pub fn set_leak_kinds(&mut self, kinds: &[&str]) -> &mut Self {
+        self.valgrind
+            .arg(format!("--show-leak-kinds={}", kinds.join(",")));
+        self
+    }
+
+    /// Report all leak kinds.
+    pub fn all_leak_kinds(&mut self) -> &mut Self {
+        self.valgrind.arg("--show-leak-kinds=all");
+        self
+    }
+
     /// Run a binary inside `valgrind` and collect the report.
     ///
     /// This function launches a valgrind process, that does full leak checks
