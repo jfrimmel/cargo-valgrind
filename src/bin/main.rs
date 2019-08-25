@@ -85,7 +85,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .help(
                             "Select, which leak kinds to report (either a \
                              comma-separated list of `definite`, `indirect`, \
-                             `possible` and `reachable` or `all` or `none`)",
+                             `possible` and `reachable` or `all`)",
                         )
                         .long("show-leak-kinds")
                         .takes_value(true)
@@ -93,7 +93,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .default_value("definite,possible")
                         .empty_values(false)
                         .validator(|s| {
-                            if s == "all" || s == "none" {
+                            if s == "all" {
                                 Ok(())
                             } else {
                                 s.split(',')
