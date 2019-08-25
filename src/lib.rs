@@ -315,26 +315,120 @@ pub mod cargo_config {
 /// This function returns an error, if valgrind could not be executed
 /// successfully, its output could not be parsed correctly or any other process
 /// related error occurs.
+#[deprecated(
+    since = "1.2.0",
+    note = "Use the more flexible `Valgrind` type instead"
+)]
 pub fn valgrind<P: AsRef<Path>>(path: P) -> Result<Vec<Leak>, Error> {
-    Ok(run_in_valgrind(path)?
-        .errors
-        .unwrap_or_default()
-        .into_iter()
-        .map(|error| Leak {
-            bytes: error.resources.bytes,
-            kind: error.kind,
-            stack_trace: error
-                .stack_trace
-                .frames
-                .into_iter()
-                .map(|frame| Function {
-                    name: frame.function,
-                    file: frame.file,
-                    line: frame.line,
-                })
-                .collect(),
-        })
-        .collect())
+    Valgrind::new().analyze(path)
+}
+
+/// A `valgrind` command.
+///
+/// This type acts as a sentinel for a `valgrind` process. It allows the
+/// configuration via the `new()` function in a builder pattern style.
+#[derive(Debug)]
+pub struct Valgrind {
+    /// The valgrind command to execute.
+    valgrind: Command,
+}
+impl Valgrind {
+    /// Start configuring the valgrind command that will analyze the target.
+    pub fn new() -> Self {
+        Valgrind {
+            valgrind: Command::new("valgrind"),
+        }
+    }
+
+    /// Analyze the specified binary with the selected valgrind configuration.
+    ///
+    /// This function runs the program in valgrind, parses its XML output,
+    /// collects the leak information and returns the list of leaks. If this
+    /// list is empty, the program has no detected leaks.
+    ///
+    /// # Errors
+    /// This function returns an error, if valgrind could not be executed
+    /// successfully, its output could not be parsed correctly or any other
+    /// process related error occurs.
+    pub fn analyze<P: AsRef<Path>>(mut self, path: P) -> Result<Vec<Leak>, Error> {
+        Ok(self
+            .run_in_valgrind(path)?
+            .errors
+            .unwrap_or_default()
+            .into_iter()
+            .map(|error| Leak {
+                bytes: error.resources.bytes,
+                kind: error.kind,
+                stack_trace: error
+                    .stack_trace
+                    .frames
+                    .into_iter()
+                    .map(|frame| Function {
+                        name: frame.function,
+                        file: frame.file,
+                        line: frame.line,
+                    })
+                    .collect(),
+            })
+            .collect())
+    }
+
+    /// Specify, whether all leaks or only a summary should be reported.
+    ///
+    /// Possible values are `"summary"` and `"full"`. Other values will cause
+    /// the valgrind command to fail.
+    pub fn set_leak_check(&mut self, kind: &str) -> &mut Self {
+        self.valgrind.arg(format!("--leak-check={}", kind));
+        self
+    }
+
+    /// Specify the leak kinds to report.
+    ///
+    /// Possible values are `"definite"`, `"possible"`, `"reachable"` and
+    /// `"indirect"`. Other values will cause the valgrind command to fail.
+    pub fn set_leak_kinds(&mut self, kinds: &[&str]) -> &mut Self {
+        self.valgrind
+            .arg(format!("--show-leak-kinds={}", kinds.join(",")));
+        self
+    }
+
+    /// Report all leak kinds.
+    pub fn all_leak_kinds(&mut self) -> &mut Self {
+        self.valgrind.arg("--show-leak-kinds=all");
+        self
+    }
+
+    /// Run a binary inside `valgrind` and collect the report.
+    ///
+    /// This function launches a valgrind process, that does full leak checks
+    /// and reports all leak kinds in the XML format. The XML output is sent to
+    /// a local socket and then parsed into the `valgrind_xml::Output`
+    /// structure.
+    ///
+    /// # Errors
+    /// This function fails, if either the valgrind command couldn't be spawned
+    /// or executed successfully, the socket creation or read operation fails or
+    /// the received XML could not be parsed correctly.
+    fn run_in_valgrind<P: AsRef<Path>>(&mut self, path: P) -> Result<valgrind_xml::Output, Error> {
+        // port selected by OS
+        let address: SocketAddr = ([127, 0, 0, 1], 0).into();
+        let listener = TcpListener::bind(address)?;
+        let address = listener.local_addr()?;
+        let mut valgrind = self
+            .valgrind
+            .arg("--xml=yes")
+            .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
+            .arg(path.as_ref())
+            .spawn()?;
+        let (listener, _socket) = listener.accept()?;
+
+        if valgrind.wait()?.success() {
+            serde_xml_rs::from_reader(listener)
+                .map_err(|e| Error::new(ErrorKind::Other, format!("Could not parse XML: {}", e)))
+        } else {
+            Err(Error::new(ErrorKind::Other, "valgrind command failed"))
+        }
+    }
 }
 
 /// A single memory leak.
@@ -426,37 +520,6 @@ impl Display for Function {
             f.write_str(")")?;
         }
         Ok(())
-    }
-}
-
-/// Run a binary inside `valgrind` and collect the report.
-///
-/// This function launches a valgrind process, that does full leak checks and
-/// reports all leak kinds in the XML format. The XML output is sent to a local
-/// socket and then parsed into the `valgrind_xml::Output` structure.
-///
-/// # Errors
-/// This function fails, if either the valgrind command couldn't be spawned or
-/// executed successfully, the socket creation or read operation fails or the
-/// received XML could not be parsed correctly.
-fn run_in_valgrind<P: AsRef<Path>>(path: P) -> Result<valgrind_xml::Output, Error> {
-    let address: SocketAddr = ([127, 0, 0, 1], 0).into(); // port selected by OS
-    let listener = TcpListener::bind(address)?;
-    let address = listener.local_addr()?;
-    let mut valgrind = Command::new("valgrind")
-        .arg("--leak-check=full")
-        .arg("--show-leak-kinds=all")
-        .arg("--xml=yes")
-        .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
-        .arg(path.as_ref())
-        .spawn()?;
-    let (listener, _socket) = listener.accept()?;
-
-    if valgrind.wait()?.success() {
-        serde_xml_rs::from_reader(listener)
-            .map_err(|e| Error::new(ErrorKind::Other, format!("Could not parse XML: {}", e)))
-    } else {
-        Err(Error::new(ErrorKind::Other, "valgrind command failed"))
     }
 }
 

@@ -1,4 +1,4 @@
-use cargo_valgrind::{targets, valgrind, Build, Cargo, Leak, Target};
+use cargo_valgrind::{targets, Build, Cargo, Leak, Target, Valgrind};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
 use std::path::{Path, PathBuf};
@@ -237,7 +237,8 @@ fn analyze_target(target: &Target, manifest: &Path) -> Result<Report> {
         .unwrap_or_default();
     println!("{:>12} `{}`", "Analyzing".green().bold(), target_path);
 
-    let errors = valgrind(target.path())?;
+    let valgrind = Valgrind::new();
+    let errors = valgrind.analyze(target.path())?;
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
     } else {
