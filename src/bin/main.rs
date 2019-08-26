@@ -286,6 +286,7 @@ fn run() -> Result<Report> {
 }
 
 fn main() {
+    env_logger::init_from_env("VALGRIND_LOG");
     match run() {
         Ok(Report::NoErrorDetected) => {}
         Ok(Report::ContainsErrors) => std::process::exit(1),
