@@ -79,6 +79,14 @@ If you want to use the latest changes, that were not yet published to `crates.io
 $ cargo install --git https://github.com/jfrimmel/cargo-valgrind
 ```
 
+## Optional features
+This crate can optionally log the different events.
+This is rather helpful while debugging the `cargo-valgrind` command itself.
+Since the normal user doesn't need it, the logging support is disabled by default together with the extra dependencies for the logging.
+
+If you want to enable logging, you have to specify the `logging` feature.
+This could be done via the `--features logging` flag while installing the binary (if you depend on the main crate itself, add the `logging`-feature in your `Cargo.toml`).
+
 # License
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
 
