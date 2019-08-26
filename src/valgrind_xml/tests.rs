@@ -3,7 +3,7 @@ use super::{Error, Frame, Kind, Output, Resources};
 #[test]
 fn sample_output() {
     let xml: Output = serde_xml_rs::from_reader(
-        std::fs::File::open("src/valgrind_xml/vg.xml").expect("Could not open test file"),
+        std::fs::File::open("src/valgrind_xml/memory-leaks.xml").expect("Could not open test file"),
     )
     .expect("Could not read test file");
 
