@@ -684,8 +684,11 @@ fn binaries_from<P: AsRef<Path>>(
 /// parsed.
 fn metadata<P: AsRef<Path>>(path: P) -> Result<metadata::Metadata, Error> {
     let metadata = cargo_metadata(path)?;
-    serde_json::from_str(&metadata)
-        .map_err(|e| Error::new(ErrorKind::Other, format!("Invalid metadata: {}", e)))
+    serde_json::from_str(&metadata).map_err(|e| {
+        error!("Cannot parse cargo metadata: {}", metadata);
+
+        Error::new(ErrorKind::Other, format!("Invalid metadata: {}", e))
+    })
 }
 
 /// Run the `cargo metadata` command and collect its output.
