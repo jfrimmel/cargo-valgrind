@@ -1,6 +1,6 @@
 [package]
 name = "cargo-valgrind"
-version = "1.2.0"
+version = "1.2.1"
 authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
 edition = "2018"
 description = "A cargo subcommand for running valgrind"
@@ -46,3 +46,14 @@ version = "1.8.0"
 
 [dependencies.bytesize]
 version = "1.0.0"
+
+[dependencies.log]
+version = "0.4.8"
+optional = true
+
+[dependencies.env_logger]
+version = "0.6.2"
+optional = true
+
+[features]
+logging = ["env_logger", "log"]
