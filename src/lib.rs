@@ -30,6 +30,13 @@ use std::{
 };
 pub use valgrind_xml::Kind;
 
+#[cfg(feature = "log")]
+use log::error;
+#[cfg(not(feature = "log"))]
+macro_rules! error {
+    ($tt:tt) => {};
+}
+
 /// The possible build types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Build {
@@ -443,11 +450,17 @@ impl Valgrind {
             .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
             .arg(path.as_ref())
             .spawn()?;
-        let (listener, _socket) = listener.accept()?;
+        let (mut listener, _socket) = listener.accept()?;
 
         if valgrind.wait()?.success() {
-            serde_xml_rs::from_reader(listener)
-                .map_err(|e| Error::new(ErrorKind::Other, format!("Could not parse XML: {}", e)))
+            use std::io::Read;
+            let mut buffer = Vec::new();
+            listener.read_to_end(&mut buffer)?;
+            serde_xml_rs::from_reader(buffer.as_slice()).map_err(|e| {
+                error!("Cannot parse XML: {}", String::from_utf8_lossy(&buffer));
+
+                Error::new(ErrorKind::Other, format!("Could not parse XML: {}", e))
+            })
         } else {
             Err(Error::new(ErrorKind::Other, "valgrind command failed"))
         }
