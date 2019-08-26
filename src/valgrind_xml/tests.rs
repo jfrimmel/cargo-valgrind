@@ -2,10 +2,12 @@ use super::{Error, Frame, Kind, Output, Resources};
 
 #[test]
 fn sample_output() {
-    let xml: Output =
-        serde_xml_rs::from_reader(std::fs::File::open("src/valgrind_xml/vg.xml").unwrap()).unwrap();
+    let xml: Output = serde_xml_rs::from_reader(
+        std::fs::File::open("src/valgrind_xml/vg.xml").expect("Could not open test file"),
+    )
+    .expect("Could not read test file");
 
-    let errors = xml.errors.unwrap();
+    let errors = xml.errors.expect("There are errors in the test case");
     assert_eq!(errors.len(), 8);
     assert_eq!(errors[0].kind, Kind::LeakDefinitelyLost);
     assert_eq!(errors[0].unique, 0x0);
@@ -20,7 +22,7 @@ fn sample_output() {
         &errors[0].stack_trace.frames[..2],
         &[
             Frame {
-                instruction_pointer: 0x483AD7B,
+                instruction_pointer: 0x483_AD7B,
                 object: Some("/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so".into()),
                 directory: Some("/build/valgrind/src/valgrind/coregrind/m_replacemalloc".into()),
                 function: Some("realloc".into()),
@@ -28,7 +30,7 @@ fn sample_output() {
                 line: Some(826),
             },
             Frame {
-                instruction_pointer: 0x12B6F4,
+                instruction_pointer: 0x12_B6F4,
                 object: Some("/home/jfrimmel/git/lava.rs/target/debug/examples/creation".into()),
                 directory: Some(
                     "/rustc/a53f9df32fbb0b5f4382caaad8f1a46f36ea887c/src/liballoc".into()
@@ -70,7 +72,7 @@ fn unique_ids_have_to_be_in_hex_with_prefix() {
            </stack>\
          </error>",
     )
-    .unwrap();
+    .expect("Could not parse test XML");
     assert_eq!(result.unique, 0xDEAD_1234);
 }
 
@@ -175,7 +177,7 @@ fn hex_and_prefix_case_is_ignored() {
            </stack>\
          </error>",
     )
-    .unwrap();
+    .expect("Could not parse test XML");
     assert_eq!(result.unique, 0xDEAD_BEEF);
 }
 
@@ -198,6 +200,6 @@ fn unique_id_is_64bit() {
            </stack>\
          </error>",
     )
-    .unwrap();
+    .expect("Could not parse test XML");
     assert_eq!(result.unique, 0x1234_5678_9ABC_DEF0);
 }
