@@ -87,6 +87,9 @@ Since the normal user doesn't need it, the logging support is disabled by defaul
 If you want to enable logging, you have to specify the `logging` feature.
 This could be done via the `--features logging` flag while installing the binary (if you depend on the main crate itself, add the `logging`-feature in your `Cargo.toml`).
 
+If you have a binary with logging support you can view the log by setting the `VALGRIND_LOG` environment variable.
+The possible values are documented in the used [`env_logger` crate](https://docs.rs/env_logger/#enabling-logging).
+
 # License
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
 
