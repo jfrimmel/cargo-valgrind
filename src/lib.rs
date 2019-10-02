@@ -632,6 +632,7 @@ fn binaries_from<P: AsRef<Path>>(
                 .targets
                 .into_iter()
                 .filter(|target| target.crate_types.contains(&metadata::CrateType::Binary))
+                .filter(|target| target.kind[0] != metadata::Kind::CustomBuild)
                 .map(|target| {
                     let path = target_dir
                         .join(match target.kind[0] {
