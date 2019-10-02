@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.2.1
+- Fixed panic if the crate under test contains a build script
+- Print an error if there are no runnable targets available
+
 ## Version 1.2.0
 - Support the valgrind parameter `--show-leak-kinds=<set>`
 - Support the valgrind parameter `--leak-check=<summary|full>`
