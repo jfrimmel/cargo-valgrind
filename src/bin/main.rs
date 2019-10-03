@@ -199,7 +199,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     let target = match specified {
         Some(path) => path,
         None if targets.len() == 1 => targets[0].clone(),
-        None if targets.is_empty() => Err("No runnable target found.")?,
+        None if targets.is_empty() => return Err("No runnable target found.".into()),
         None => {
             let mut error = String::from("Multiple possible targets, please specify one of:\n");
             let targets: Vec<_> = targets
@@ -211,7 +211,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
                 .collect();
 
             error += &targets.join("\n");
-            Err(error)?
+            return Err(error.into());
         }
     };
     let target = targets

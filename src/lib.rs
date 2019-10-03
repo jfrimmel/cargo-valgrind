@@ -40,14 +40,14 @@ pub enum Build {
 }
 impl Default for Build {
     fn default() -> Self {
-        Build::Debug
+        Self::Debug
     }
 }
 impl AsRef<Path> for Build {
     fn as_ref(&self) -> &Path {
         match self {
-            Build::Debug => Path::new("debug"),
-            Build::Release => Path::new("release"),
+            Self::Debug => Path::new("debug"),
+            Self::Release => Path::new("release"),
         }
     }
 }
@@ -71,10 +71,9 @@ impl Target {
     /// it omits the hash value).
     pub fn path(&self) -> &Path {
         match self {
-            Target::Binary(path)
-            | Target::Example(path)
-            | Target::Benchmark(path)
-            | Target::Test(path) => path.as_path(),
+            Self::Binary(path) | Self::Example(path) | Self::Benchmark(path) | Self::Test(path) => {
+                path.as_path()
+            }
         }
     }
 
@@ -84,10 +83,8 @@ impl Target {
     /// the hash value).
     pub fn real_path(&self) -> PathBuf {
         match self {
-            Target::Binary(path) | Target::Example(path) | Target::Benchmark(path) => {
-                path.to_path_buf()
-            }
-            Target::Test(path) => find_newest_file(&path).expect("Could not find test binary"),
+            Self::Binary(path) | Self::Example(path) | Self::Benchmark(path) => path.to_path_buf(),
+            Self::Test(path) => find_newest_file(&path).expect("Could not find test binary"),
         }
     }
 
@@ -107,7 +104,7 @@ impl Target {
     /// Query, if the target is an ordinary binary.
     pub fn is_binary(&self) -> bool {
         match self {
-            Target::Binary(_) => true,
+            Self::Binary(_) => true,
             _ => false,
         }
     }
@@ -115,7 +112,7 @@ impl Target {
     /// Query, if the target is an example binary.
     pub fn is_example(&self) -> bool {
         match self {
-            Target::Example(_) => true,
+            Self::Example(_) => true,
             _ => false,
         }
     }
@@ -123,7 +120,7 @@ impl Target {
     /// Query, if the target is a benchmark binary.
     pub fn is_benchmark(&self) -> bool {
         match self {
-            Target::Benchmark(_) => true,
+            Self::Benchmark(_) => true,
             _ => false,
         }
     }
@@ -131,7 +128,7 @@ impl Target {
     /// Query, if the target is a test binary.
     pub fn is_test(&self) -> bool {
         match self {
-            Target::Test(_) => true,
+            Self::Test(_) => true,
             _ => false,
         }
     }
@@ -140,10 +137,10 @@ impl std::cmp::PartialEq for Target {
     fn eq(&self, other: &Self) -> bool {
         self.name() == other.name()
             && match (self, other) {
-                (Target::Binary(_), Target::Binary(_))
-                | (Target::Example(_), Target::Example(_))
-                | (Target::Benchmark(_), Target::Benchmark(_))
-                | (Target::Test(_), Target::Test(_)) => true,
+                (Self::Binary(_), Self::Binary(_))
+                | (Self::Example(_), Self::Example(_))
+                | (Self::Benchmark(_), Self::Benchmark(_))
+                | (Self::Test(_), Self::Test(_)) => true,
                 _ => false,
             }
     }

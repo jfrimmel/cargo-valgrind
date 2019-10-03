@@ -86,21 +86,21 @@ pub enum Kind {
 impl Display for Kind {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            Kind::LeakDefinitelyLost => write!(f, "Leak (definitely lost)"),
-            Kind::LeakStillReachable => write!(f, "Leak (still reachable)"),
-            Kind::LeakIndirectlyLost => write!(f, "Leak (indirectly lost)"),
-            Kind::LeakPossiblyLost => write!(f, "Leak (possibly lost)"),
-            Kind::InvalidFree => write!(f, "invalid free"),
-            Kind::MismatchedFree => write!(f, "mismatched free"),
-            Kind::InvalidRead => write!(f, "invalid read"),
-            Kind::InvalidWrite => write!(f, "invalid write"),
-            Kind::InvalidJump => write!(f, "invalid jump"),
-            Kind::Overlap => write!(f, "overlap"),
-            Kind::InvalidMemPool => write!(f, "invalid memory pool"),
-            Kind::UninitCondition => write!(f, "uninitialized condition"),
-            Kind::UninitValue => write!(f, "uninitialized value"),
-            Kind::SyscallParam => write!(f, "syscall parameter"),
-            Kind::ClientCheck => write!(f, "client check"),
+            Self::LeakDefinitelyLost => write!(f, "Leak (definitely lost)"),
+            Self::LeakStillReachable => write!(f, "Leak (still reachable)"),
+            Self::LeakIndirectlyLost => write!(f, "Leak (indirectly lost)"),
+            Self::LeakPossiblyLost => write!(f, "Leak (possibly lost)"),
+            Self::InvalidFree => write!(f, "invalid free"),
+            Self::MismatchedFree => write!(f, "mismatched free"),
+            Self::InvalidRead => write!(f, "invalid read"),
+            Self::InvalidWrite => write!(f, "invalid write"),
+            Self::InvalidJump => write!(f, "invalid jump"),
+            Self::Overlap => write!(f, "overlap"),
+            Self::InvalidMemPool => write!(f, "invalid memory pool"),
+            Self::UninitCondition => write!(f, "uninitialized condition"),
+            Self::UninitValue => write!(f, "uninitialized value"),
+            Self::SyscallParam => write!(f, "syscall parameter"),
+            Self::ClientCheck => write!(f, "client check"),
         }
     }
 }
