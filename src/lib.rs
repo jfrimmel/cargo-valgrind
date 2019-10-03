@@ -633,19 +633,23 @@ fn binaries_from<P: AsRef<Path>>(
                 .into_iter()
                 .filter(|target| target.crate_types.contains(&metadata::CrateType::Binary))
                 .filter(|target| target.kind[0] != metadata::Kind::CustomBuild)
+                .filter(|target| target.kind[0] != metadata::Kind::Test)
                 .map(|target| {
                     let path = target_dir
                         .join(match target.kind[0] {
                             metadata::Kind::Binary => "",
                             metadata::Kind::Example => "examples",
                             metadata::Kind::Bench => "benches",
-                            metadata::Kind::Test | metadata::Kind::CustomBuild => unimplemented!(),
                             metadata::Kind::Library
                             | metadata::Kind::ProcMacro
                             | metadata::Kind::DyLib
                             | metadata::Kind::CDyLib
                             | metadata::Kind::StaticLib
                             | metadata::Kind::RLib => unreachable!("Non-binaries are filtered out"),
+                            target @ metadata::Kind::CustomBuild
+                            | target @ metadata::Kind::Test => {
+                                unreachable!("Target {:?} should be filtered out", target)
+                            }
                         })
                         .join(target.name);
                     match target.kind[0] {
