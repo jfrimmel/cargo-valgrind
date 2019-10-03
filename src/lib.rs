@@ -667,8 +667,32 @@ fn binaries_from<P: AsRef<Path>>(
 /// This is useful for test artifacts, that have a 64bit hash after the filename
 /// itself.
 fn find_newest_file<P: AsRef<Path>>(prefix: P) -> Option<PathBuf> {
-    // FIXME: implement searching
-    Some(prefix.as_ref().into())
+    let prefix = prefix.as_ref();
+    let file_name = prefix.file_name()?.to_str()?;
+    let dir = prefix.with_file_name("");
+
+    let get_time = |entry: &std::fs::DirEntry| -> std::io::Result<u128> {
+        Ok(entry
+            .metadata()?
+            .modified()?
+            .duration_since(std::time::SystemTime::UNIX_EPOCH)
+            .expect("Time glitch")
+            .as_nanos())
+    };
+
+    dir.read_dir()
+        .ok()?
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().extension().is_none())
+        .filter(|entry| {
+            entry
+                .file_name()
+                .to_str()
+                .map(|s| s.starts_with(file_name))
+                .unwrap_or_default()
+        })
+        .max_by_key(|entry| get_time(entry).unwrap_or_default())
+        .map(|entry| entry.path())
 }
 
 /// Query the crate metadata of the given `Cargo.toml`.
