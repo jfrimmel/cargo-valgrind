@@ -39,7 +39,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("bin")
                         .takes_value(true)
                         .value_name("NAME")
-                        .conflicts_with_all(&["example", "bench"]),
+                        .conflicts_with_all(&["example", "bench", "test"]),
                 )
                 .arg(
                     Arg::with_name("example")
@@ -47,7 +47,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("example")
                         .takes_value(true)
                         .value_name("NAME")
-                        .conflicts_with_all(&["bin", "bench"]),
+                        .conflicts_with_all(&["bin", "bench", "test"]),
                 )
                 .arg(
                     Arg::with_name("bench")
@@ -55,7 +55,15 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .long("bench")
                         .takes_value(true)
                         .value_name("NAME")
-                        .conflicts_with_all(&["bin", "example"]),
+                        .conflicts_with_all(&["bin", "example", "test"]),
+                )
+                .arg(
+                    Arg::with_name("test")
+                        .help("Build and run the specified integration tests")
+                        .long("test")
+                        .takes_value(true)
+                        .value_name("NAME")
+                        .conflicts_with_all(&["bin", "example", "bench"]),
                 )
                 .arg(
                     Arg::with_name("manifest")
@@ -156,6 +164,11 @@ fn specified_target(parameters: &ArgMatches) -> Option<Target> {
                 .value_of("bench")
                 .map(|path| Target::Benchmark(PathBuf::from(path)))
         })
+        .or_else(|| {
+            parameters
+                .value_of("test")
+                .map(|path| Target::Test(PathBuf::from(path)))
+        })
 }
 
 /// Search for the actual binary to analyze.
@@ -203,7 +216,7 @@ fn find_target(specified: Option<Target>, targets: &[Target]) -> Result<Target> 
     };
     let target = targets
         .iter()
-        .find(|&path| path == &target)
+        .find(|&path| path.name().starts_with(target.name()))
         .cloned()
         .ok_or_else(|| {
             format!(
@@ -232,7 +245,7 @@ fn display_error(leak: Leak) {
 fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Result<Report> {
     let crate_root = manifest.parent().ok_or("Invalid empty manifest path")?;
     let target_path = target
-        .path()
+        .real_path()
         .strip_prefix(crate_root)
         .map(|path| path.display().to_string())
         .unwrap_or_default();
@@ -251,7 +264,7 @@ fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Res
         }
         _ => {}
     }
-    let errors = valgrind.analyze(target.path())?;
+    let errors = valgrind.analyze(target.real_path())?;
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
     } else {
