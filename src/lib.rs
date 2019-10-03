@@ -62,7 +62,14 @@ pub enum Target {
     /// A benchmark with the given name.
     Benchmark(PathBuf),
     /// A test with the given name.
-    Test(PathBuf),
+    Test(PathBuf), // FIXME: deprecate
+    /// A test binary.
+    TestBinary {
+        /// The name of the binary.
+        name: String,
+        /// The path to the binary.
+        path: PathBuf,
+    },
 }
 impl Target {
     /// Query the path to the target binary.
@@ -71,6 +78,7 @@ impl Target {
             Target::Binary(path)
             | Target::Example(path)
             | Target::Benchmark(path)
+            | Target::TestBinary { path, .. }
             | Target::Test(path) => path.as_path(),
         }
     }
@@ -81,11 +89,15 @@ impl Target {
     /// This method panics, if either the path has no file name, i.e. it is
     /// empty or the file name contains invalid UTF-8.
     pub fn name(&self) -> &str {
-        self.path()
-            .file_name()
-            .expect("binary has no name")
-            .to_str()
-            .expect("binary name contained invalid UTF-8")
+        match self {
+            Self::TestBinary { name, .. } => &name,
+            _ => self
+                .path()
+                .file_name()
+                .expect("binary has no name")
+                .to_str()
+                .expect("binary name contained invalid UTF-8"),
+        }
     }
 
     /// Query, if the target is an ordinary binary.
@@ -115,7 +127,7 @@ impl Target {
     /// Query, if the target is a test binary.
     pub fn is_test(&self) -> bool {
         match self {
-            Target::Test(_) => true,
+            Target::Test(_) | Target::TestBinary { .. } => true,
             _ => false,
         }
     }
@@ -127,7 +139,8 @@ impl std::cmp::PartialEq for Target {
                 (Target::Binary(_), Target::Binary(_))
                 | (Target::Example(_), Target::Example(_))
                 | (Target::Benchmark(_), Target::Benchmark(_))
-                | (Target::Test(_), Target::Test(_)) => true,
+                | (Target::Test(_), Target::Test(_))
+                | (Target::TestBinary { .. }, Target::TestBinary { .. }) => true,
                 _ => false,
             }
     }
@@ -165,7 +178,7 @@ pub fn build_target<P: AsRef<Path>>(
         Target::Binary(_) => cmd.arg("--bin"),
         Target::Example(_) => cmd.arg("--example"),
         Target::Benchmark(_) => cmd.arg("--bench"),
-        Target::Test(_) => cmd.arg("--test"),
+        Target::Test(_) | Target::TestBinary { .. } => cmd.arg("--test"),
     };
     cmd.arg(target.name());
     cmd.spawn()?.wait_with_output().and_then(|output| {
@@ -221,7 +234,7 @@ impl Cargo {
             Target::Binary(_) => cmd.arg("--bin"),
             Target::Example(_) => cmd.arg("--example"),
             Target::Benchmark(_) => cmd.arg("--bench"),
-            Target::Test(_) => cmd.arg("--test"),
+            Target::Test(_) | Target::TestBinary { .. } => cmd.arg("--test"),
         };
         cmd.arg(self.target.name());
         if !self.features.is_empty() {
@@ -578,6 +591,7 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, E
             Target::Binary(path)
             | Target::Example(path)
             | Target::Benchmark(path)
+            | Target::TestBinary { path, .. }
             | Target::Test(path) => path,
         })
         .collect())
@@ -650,7 +664,7 @@ fn binaries_from<P: AsRef<Path>>(
                         })
                         .join(target.name);
                     let path = match target.kind[0] {
-                        metadata::Kind::Test => find_newest_file(path).expect("Missing binary"),
+                        metadata::Kind::Test => find_newest_file(&path).unwrap_or(path),
                         _ => path,
                     };
                     match target.kind[0] {
