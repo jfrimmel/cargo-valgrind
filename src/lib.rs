@@ -649,7 +649,10 @@ fn binaries_from<P: AsRef<Path>>(
                             metadata::Kind::Test => "deps",
                         })
                         .join(target.name);
-                    let path = find_newest_file(path).expect("Missing binary");
+                    let path = match target.kind[0] {
+                        metadata::Kind::Test => find_newest_file(path).expect("Missing binary"),
+                        _ => path,
+                    };
                     match target.kind[0] {
                         metadata::Kind::Binary => Target::Binary(path),
                         metadata::Kind::Example => Target::Example(path),
