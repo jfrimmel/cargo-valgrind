@@ -66,12 +66,28 @@ pub enum Target {
 }
 impl Target {
     /// Query the path to the target binary.
+    ///
+    /// This method returns not the actual path name of the test binaries (i.e.
+    /// it omits the hash value).
     pub fn path(&self) -> &Path {
         match self {
             Target::Binary(path)
             | Target::Example(path)
             | Target::Benchmark(path)
             | Target::Test(path) => path.as_path(),
+        }
+    }
+
+    /// Query the real path to the target binary.
+    ///
+    /// This method returns the actual path name of the test binaries (i.e. with
+    /// the hash value).
+    pub fn real_path(&self) -> PathBuf {
+        match self {
+            Target::Binary(path) | Target::Example(path) | Target::Benchmark(path) => {
+                path.to_path_buf()
+            }
+            Target::Test(path) => find_newest_file(&path).expect("Could not find test binary"),
         }
     }
 
@@ -639,13 +655,14 @@ fn binaries_from<P: AsRef<Path>>(
                             metadata::Kind::Binary => "",
                             metadata::Kind::Example => "examples",
                             metadata::Kind::Bench => "benches",
-                            metadata::Kind::Test | metadata::Kind::CustomBuild => unimplemented!(),
                             metadata::Kind::Library
                             | metadata::Kind::ProcMacro
+                            | metadata::Kind::CustomBuild
                             | metadata::Kind::DyLib
                             | metadata::Kind::CDyLib
                             | metadata::Kind::StaticLib
                             | metadata::Kind::RLib => unreachable!("Non-binaries are filtered out"),
+                            metadata::Kind::Test => "deps",
                         })
                         .join(target.name);
                     match target.kind[0] {
@@ -658,6 +675,39 @@ fn binaries_from<P: AsRef<Path>>(
                 })
         })
         .collect())
+}
+
+/// Find the newest file that matches the given prefix name.
+///
+/// This is useful for test artifacts, that have a 64bit hash after the filename
+/// itself.
+fn find_newest_file<P: AsRef<Path>>(prefix: P) -> Option<PathBuf> {
+    let prefix = prefix.as_ref();
+    let file_name = prefix.file_name()?.to_str()?;
+    let dir = prefix.with_file_name("");
+
+    let get_time = |entry: &std::fs::DirEntry| -> std::io::Result<u128> {
+        Ok(entry
+            .metadata()?
+            .modified()?
+            .duration_since(std::time::SystemTime::UNIX_EPOCH)
+            .expect("Time glitch")
+            .as_nanos())
+    };
+
+    dir.read_dir()
+        .ok()?
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().extension().is_none())
+        .filter(|entry| {
+            entry
+                .file_name()
+                .to_str()
+                .map(|s| s.starts_with(file_name))
+                .unwrap_or_default()
+        })
+        .max_by_key(|entry| get_time(entry).unwrap_or_default())
+        .map(|entry| entry.path())
 }
 
 /// Query the crate metadata of the given `Cargo.toml`.
