@@ -633,7 +633,6 @@ fn binaries_from<P: AsRef<Path>>(
                 .into_iter()
                 .filter(|target| target.crate_types.contains(&metadata::CrateType::Binary))
                 .filter(|target| target.kind[0] != metadata::Kind::CustomBuild)
-                .filter(|target| target.kind[0] != metadata::Kind::Test)
                 .map(|target| {
                     let path = target_dir
                         .join(match target.kind[0] {
@@ -642,16 +641,15 @@ fn binaries_from<P: AsRef<Path>>(
                             metadata::Kind::Bench => "benches",
                             metadata::Kind::Library
                             | metadata::Kind::ProcMacro
+                            | metadata::Kind::CustomBuild
                             | metadata::Kind::DyLib
                             | metadata::Kind::CDyLib
                             | metadata::Kind::StaticLib
                             | metadata::Kind::RLib => unreachable!("Non-binaries are filtered out"),
-                            target @ metadata::Kind::CustomBuild
-                            | target @ metadata::Kind::Test => {
-                                unreachable!("Target {:?} should be filtered out", target)
-                            }
+                            metadata::Kind::Test => "deps",
                         })
                         .join(target.name);
+                    let path = find_newest_file(path).expect("Missing binary");
                     match target.kind[0] {
                         metadata::Kind::Binary => Target::Binary(path),
                         metadata::Kind::Example => Target::Example(path),
@@ -662,6 +660,15 @@ fn binaries_from<P: AsRef<Path>>(
                 })
         })
         .collect())
+}
+
+/// Find the newest file that matches the given prefix name.
+///
+/// This is useful for test artifacts, that have a 64bit hash after the filename
+/// itself.
+fn find_newest_file<P: AsRef<Path>>(prefix: P) -> Option<PathBuf> {
+    // FIXME: implement searching
+    Some(prefix.as_ref().into())
 }
 
 /// Query the crate metadata of the given `Cargo.toml`.
