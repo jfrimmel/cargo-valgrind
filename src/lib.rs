@@ -62,24 +62,32 @@ pub enum Target {
     /// A benchmark with the given name.
     Benchmark(PathBuf),
     /// A test with the given name.
-    Test(PathBuf), // FIXME: deprecate
-    /// A test binary.
-    TestBinary {
-        /// The name of the binary.
-        name: String,
-        /// The path to the binary.
-        path: PathBuf,
-    },
+    Test(PathBuf),
 }
 impl Target {
     /// Query the path to the target binary.
+    ///
+    /// This method returns not the actual path name of the test binaries (i.e.
+    /// it omits the hash value).
     pub fn path(&self) -> &Path {
         match self {
             Target::Binary(path)
             | Target::Example(path)
             | Target::Benchmark(path)
-            | Target::TestBinary { path, .. }
             | Target::Test(path) => path.as_path(),
+        }
+    }
+
+    /// Query the real path to the target binary.
+    ///
+    /// This method returns the actual path name of the test binaries (i.e. with
+    /// the hash value).
+    pub fn real_path(&self) -> PathBuf {
+        match self {
+            Target::Binary(path) | Target::Example(path) | Target::Benchmark(path) => {
+                path.to_path_buf()
+            }
+            Target::Test(path) => find_newest_file(&path).expect("Could not find test binary"),
         }
     }
 
@@ -89,15 +97,11 @@ impl Target {
     /// This method panics, if either the path has no file name, i.e. it is
     /// empty or the file name contains invalid UTF-8.
     pub fn name(&self) -> &str {
-        match self {
-            Self::TestBinary { name, .. } => &name,
-            _ => self
-                .path()
-                .file_name()
-                .expect("binary has no name")
-                .to_str()
-                .expect("binary name contained invalid UTF-8"),
-        }
+        self.path()
+            .file_name()
+            .expect("binary has no name")
+            .to_str()
+            .expect("binary name contained invalid UTF-8")
     }
 
     /// Query, if the target is an ordinary binary.
@@ -127,7 +131,7 @@ impl Target {
     /// Query, if the target is a test binary.
     pub fn is_test(&self) -> bool {
         match self {
-            Target::Test(_) | Target::TestBinary { .. } => true,
+            Target::Test(_) => true,
             _ => false,
         }
     }
@@ -139,8 +143,7 @@ impl std::cmp::PartialEq for Target {
                 (Target::Binary(_), Target::Binary(_))
                 | (Target::Example(_), Target::Example(_))
                 | (Target::Benchmark(_), Target::Benchmark(_))
-                | (Target::Test(_), Target::Test(_))
-                | (Target::TestBinary { .. }, Target::TestBinary { .. }) => true,
+                | (Target::Test(_), Target::Test(_)) => true,
                 _ => false,
             }
     }
@@ -178,7 +181,7 @@ pub fn build_target<P: AsRef<Path>>(
         Target::Binary(_) => cmd.arg("--bin"),
         Target::Example(_) => cmd.arg("--example"),
         Target::Benchmark(_) => cmd.arg("--bench"),
-        Target::Test(_) | Target::TestBinary { .. } => cmd.arg("--test"),
+        Target::Test(_) => cmd.arg("--test"),
     };
     cmd.arg(target.name());
     cmd.spawn()?.wait_with_output().and_then(|output| {
@@ -234,7 +237,7 @@ impl Cargo {
             Target::Binary(_) => cmd.arg("--bin"),
             Target::Example(_) => cmd.arg("--example"),
             Target::Benchmark(_) => cmd.arg("--bench"),
-            Target::Test(_) | Target::TestBinary { .. } => cmd.arg("--test"),
+            Target::Test(_) => cmd.arg("--test"),
         };
         cmd.arg(self.target.name());
         if !self.features.is_empty() {
@@ -591,7 +594,6 @@ pub fn binaries<P: AsRef<Path>>(path: P, build: Build) -> Result<Vec<PathBuf>, E
             Target::Binary(path)
             | Target::Example(path)
             | Target::Benchmark(path)
-            | Target::TestBinary { path, .. }
             | Target::Test(path) => path,
         })
         .collect())
@@ -663,10 +665,6 @@ fn binaries_from<P: AsRef<Path>>(
                             metadata::Kind::Test => "deps",
                         })
                         .join(target.name);
-                    let path = match target.kind[0] {
-                        metadata::Kind::Test => find_newest_file(&path).unwrap_or(path),
-                        _ => path,
-                    };
                     match target.kind[0] {
                         metadata::Kind::Binary => Target::Binary(path),
                         metadata::Kind::Example => Target::Example(path),
