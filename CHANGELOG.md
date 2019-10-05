@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Better error message if valgrind is not found
+
 ## Version 1.2.1
 - Support running of integration tests (normal tests are not yet supported)
 - Fixed panic if the crate under test contains a build script
