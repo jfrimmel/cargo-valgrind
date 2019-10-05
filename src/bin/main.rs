@@ -316,6 +316,56 @@ fn main() {
 mod tests {
     use super::*;
 
+    mod target_lookup {
+        use super::*;
+
+        #[test]
+        fn the_single_target_is_chosen_if_none_is_requested() {
+            let target = Target::Binary(PathBuf::from("target/debug/asdf"));
+            assert_eq!(find_target(None, &[target.clone()]).unwrap(), target);
+        }
+
+        #[test]
+        fn multiple_targets_with_none_requested_fails() {
+            assert!(find_target(
+                None,
+                &[
+                    Target::Binary(PathBuf::from("target/debug/asdf")),
+                    Target::Binary(PathBuf::from("target/debug/jklö"))
+                ]
+            )
+            .is_err());
+        }
+
+        #[test]
+        fn non_existing_target_fails() {
+            assert!(find_target(
+                Some(Target::Binary(PathBuf::from("target/debug/wtf?"))),
+                &[
+                    Target::Binary(PathBuf::from("target/debug/asdf")),
+                    Target::Binary(PathBuf::from("target/debug/jklö"))
+                ]
+            )
+            .is_err());
+        }
+
+        #[test]
+        fn requested_target_is_choosen() {
+            let target = Target::Binary(PathBuf::from("target/debug/jklö"));
+            assert_eq!(
+                find_target(
+                    Some(target.clone()),
+                    &[
+                        Target::Binary(PathBuf::from("target/debug/asdf")),
+                        Target::Binary(PathBuf::from("target/debug/jklö"))
+                    ]
+                )
+                .unwrap(),
+                target
+            );
+        }
+    }
+
     mod cargo_subcommand {
         use super::*;
 
