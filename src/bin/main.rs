@@ -309,3 +309,35 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn no_subcommand_fails() {
+        let arguments = ["cargo-valgrind"];
+
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn unknown_subcommand_fails() {
+        let arguments = ["cargo-valgrind", "this_is_not-a-SubCommand"];
+
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn subcommand_has_to_be_valgrind() {
+        let arguments = ["cargo-valgrind", "valgrind", "--help"];
+
+        assert_eq!(
+            cli()
+                .get_matches_from_safe(arguments.iter())
+                .map_err(|e| e.kind)
+                .unwrap_err(),
+            clap::ErrorKind::HelpDisplayed
+        );
+    }
+}
