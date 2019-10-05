@@ -340,4 +340,22 @@ mod tests {
             clap::ErrorKind::HelpDisplayed
         );
     }
+
+    #[test]
+    fn missing_release_flag_runs_in_debug_mode() {
+        let arguments = ["cargo-valgrind", "valgrind"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(build_type(&cli), Build::Debug);
+    }
+
+    #[test]
+    fn release_flag_is_supported() {
+        let arguments = ["cargo-valgrind", "valgrind", "--release"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(build_type(&cli), Build::Release);
+    }
 }
