@@ -358,4 +358,47 @@ mod tests {
 
         assert_eq!(build_type(&cli), Build::Release);
     }
+
+    #[test]
+    fn manifest_path_defaults_to_cargo_toml() {
+        let arguments = ["cargo-valgrind", "valgrind"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        // note, that currently this won't work inside sub-directories
+        let expected_path = PathBuf::from("Cargo.toml").canonicalize().unwrap();
+
+        assert_eq!(manifest(&cli).unwrap(), expected_path);
+    }
+
+    #[test]
+    fn manifest_path_can_be_overridden() {
+        // note, that it is not checked, whether or not this is a cargo manifest
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--manifest-path",
+            "src/lib.rs",
+        ];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        let expected_path = PathBuf::from("src/lib.rs").canonicalize().unwrap();
+
+        assert_eq!(manifest(&cli).unwrap(), expected_path);
+    }
+
+    #[test]
+    fn invalid_manifest_paths_fail() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--manifest-path",
+            "asdf_non-existent/Cargo.toml",
+        ];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert!(manifest(&cli).is_err());
+    }
 }
