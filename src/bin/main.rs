@@ -146,7 +146,7 @@ fn features<'a>(parameters: &'a ArgMatches) -> impl Iterator<Item = String> + 'a
     parameters
         .values_of("features")
         .into_iter()
-        .flat_map(|values| values.flat_map(|features| features.split(' ')))
+        .flat_map(|values| values.flat_map(|features| features.split(|c| c == ' ' || c == ',')))
         .map(|feature| feature.into())
 }
 
@@ -598,6 +598,18 @@ mod tests {
     #[test]
     fn multiple_features_can_be_space_separated() {
         let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf jklö"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(
+            features(&cli).collect::<Vec<_>>(),
+            vec![String::from("asdf"), String::from("jklö")]
+        );
+    }
+
+    #[test]
+    fn multiple_features_can_be_comma_separated() {
+        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf,jklö"];
         let cli = cli().get_matches_from(arguments.iter());
         let cli = cli.subcommand_matches("valgrind").unwrap();
 
