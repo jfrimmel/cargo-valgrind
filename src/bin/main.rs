@@ -401,4 +401,184 @@ mod tests {
 
         assert!(manifest(&cli).is_err());
     }
+
+    #[test]
+    fn binary_flag_requires_argument() {
+        let arguments = ["cargo-valgrind", "valgrind", "--bin"];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn binary_flag_conflicts_with_examples() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bin",
+            "foo",
+            "--example",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn binary_flag_conflicts_with_tests() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bin",
+            "foo",
+            "--test",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn binary_flag_conflicts_with_benchmarks() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bin",
+            "foo",
+            "--bench",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn example_flag_requires_argument() {
+        let arguments = ["cargo-valgrind", "valgrind", "--example"];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn example_flag_conflicts_with_binaries() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--example",
+            "foo",
+            "--bin",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn example_flag_conflicts_with_tests() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--example",
+            "foo",
+            "--test",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn example_flag_conflicts_with_benchmarks() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--example",
+            "foo",
+            "--bench",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn benchmark_flag_requires_argument() {
+        let arguments = ["cargo-valgrind", "valgrind", "--bench"];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn benchmark_flag_conflicts_with_binaries() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bench",
+            "foo",
+            "--bin",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn benchmark_flag_conflicts_with_tests() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bench",
+            "foo",
+            "--test",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn benchmark_flag_conflicts_with_examples() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--bench",
+            "foo",
+            "--examples",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn test_flag_requires_argument() {
+        let arguments = ["cargo-valgrind", "valgrind", "--test"];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn test_flag_conflicts_with_binaries() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--test",
+            "foo",
+            "--bin",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn test_flag_conflicts_with_benchmarks() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--test",
+            "foo",
+            "--bench",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn test_flag_conflicts_with_examples() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--test",
+            "foo",
+            "--examples",
+            "foo",
+        ];
+        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
 }
