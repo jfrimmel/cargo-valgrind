@@ -455,7 +455,14 @@ impl Valgrind {
             .arg("--xml=yes")
             .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
             .arg(path.as_ref())
-            .spawn()?;
+            .spawn()
+            .map_err(|e| match e.kind() {
+                ErrorKind::NotFound => Error::new(
+                    e.kind(),
+                    format!("valgrind executable not found in `PATH` ({})", e),
+                ),
+                _ => e,
+            })?;
         let (listener, _socket) = listener.accept()?;
 
         if valgrind.wait()?.success() {
