@@ -650,6 +650,64 @@ mod tests {
         }
     }
 
+    mod target_specification {
+        use super::*;
+
+        #[test]
+        fn no_target_flag_specifies_no_target() {
+            let arguments = ["cargo-valgrind", "valgrind"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(specified_target(&cli), None);
+        }
+
+        #[test]
+        fn binary_targets_can_be_specified() {
+            let arguments = ["cargo-valgrind", "valgrind", "--bin", "target"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(
+                specified_target(&cli),
+                Some(Target::Binary("target".into()))
+            );
+        }
+
+        #[test]
+        fn example_targets_can_be_specified() {
+            let arguments = ["cargo-valgrind", "valgrind", "--example", "target"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(
+                specified_target(&cli),
+                Some(Target::Example("target".into()))
+            );
+        }
+
+        #[test]
+        fn benchmark_targets_can_be_specified() {
+            let arguments = ["cargo-valgrind", "valgrind", "--bench", "target"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(
+                specified_target(&cli),
+                Some(Target::Benchmark("target".into()))
+            );
+        }
+
+        #[test]
+        fn test_targets_can_be_specified() {
+            let arguments = ["cargo-valgrind", "valgrind", "--test", "target"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(specified_target(&cli), Some(Target::Test("target".into())));
+        }
+    }
+
     mod features {
         use super::*;
 
