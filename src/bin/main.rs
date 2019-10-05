@@ -778,4 +778,98 @@ mod tests {
             );
         }
     }
+
+    mod valgrind_flags {
+        use super::*;
+
+        #[test]
+        fn leak_check_can_be_summary() {
+            let arguments = ["cargo-valgrind", "valgrind", "--leak-check", "summary"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_check_can_be_full() {
+            let arguments = ["cargo-valgrind", "valgrind", "--leak-check", "full"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn other_leak_check_are_invalid() {
+            let arguments = ["cargo-valgrind", "valgrind", "--leak-check", "nothing"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_all() {
+            let arguments = ["cargo-valgrind", "valgrind", "--show-leak-kinds", "all"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_definite() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "definite",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_indirect() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_possible() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "possible",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_reachable() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "reachable",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kinds_can_be_a_set() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "definite,indirect",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn leak_kind_set_may_not_include_all() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "definite,all",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+    }
 }
