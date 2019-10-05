@@ -77,6 +77,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .help("Space-separated list of features to activate")
                         .long("features")
                         .takes_value(true)
+                        .multiple(true)
                         .value_name("FEATURES"),
                 )
                 .arg(
@@ -143,9 +144,9 @@ fn manifest(parameters: &ArgMatches) -> Result<PathBuf> {
 /// Query the enabled features.
 fn features<'a>(parameters: &'a ArgMatches) -> impl Iterator<Item = String> + 'a {
     parameters
-        .value_of("features")
+        .values_of("features")
         .into_iter()
-        .flat_map(|features| features.split(' '))
+        .flat_map(|values| values.flat_map(|features| features.split(' ')))
         .map(|feature| feature.into())
 }
 
@@ -580,5 +581,48 @@ mod tests {
             "foo",
         ];
         assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+    }
+
+    #[test]
+    fn a_feature_may_be_specified() {
+        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(
+            features(&cli).collect::<Vec<_>>(),
+            vec![String::from("asdf")]
+        );
+    }
+
+    #[test]
+    fn multiple_features_can_be_space_separated() {
+        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf jklö"];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(
+            features(&cli).collect::<Vec<_>>(),
+            vec![String::from("asdf"), String::from("jklö")]
+        );
+    }
+
+    #[test]
+    fn feature_flag_is_additive() {
+        let arguments = [
+            "cargo-valgrind",
+            "valgrind",
+            "--features",
+            "asdf",
+            "--features",
+            "jklö",
+        ];
+        let cli = cli().get_matches_from(arguments.iter());
+        let cli = cli.subcommand_matches("valgrind").unwrap();
+
+        assert_eq!(
+            features(&cli).collect::<Vec<_>>(),
+            vec![String::from("asdf"), String::from("jklö")]
+        );
     }
 }
