@@ -316,338 +316,358 @@ fn main() {
 mod tests {
     use super::*;
 
-    #[test]
-    fn no_subcommand_fails() {
-        let arguments = ["cargo-valgrind"];
+    mod cargo_subcommand {
+        use super::*;
 
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        #[test]
+        fn no_subcommand_fails() {
+            let arguments = ["cargo-valgrind"];
+
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn unknown_subcommand_fails() {
+            let arguments = ["cargo-valgrind", "this_is_not-a-SubCommand"];
+
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn subcommand_has_to_be_valgrind() {
+            let arguments = ["cargo-valgrind", "valgrind", "--help"];
+
+            assert_eq!(
+                cli()
+                    .get_matches_from_safe(arguments.iter())
+                    .map_err(|e| e.kind)
+                    .unwrap_err(),
+                clap::ErrorKind::HelpDisplayed
+            );
+        }
     }
 
-    #[test]
-    fn unknown_subcommand_fails() {
-        let arguments = ["cargo-valgrind", "this_is_not-a-SubCommand"];
+    mod release_flag {
+        use super::*;
 
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        #[test]
+        fn missing_release_flag_runs_in_debug_mode() {
+            let arguments = ["cargo-valgrind", "valgrind"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(build_type(&cli), Build::Debug);
+        }
+
+        #[test]
+        fn release_flag_is_supported() {
+            let arguments = ["cargo-valgrind", "valgrind", "--release"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert_eq!(build_type(&cli), Build::Release);
+        }
     }
 
-    #[test]
-    fn subcommand_has_to_be_valgrind() {
-        let arguments = ["cargo-valgrind", "valgrind", "--help"];
+    mod manifest_flag {
+        use super::*;
 
-        assert_eq!(
-            cli()
-                .get_matches_from_safe(arguments.iter())
-                .map_err(|e| e.kind)
-                .unwrap_err(),
-            clap::ErrorKind::HelpDisplayed
-        );
+        #[test]
+        fn manifest_path_defaults_to_cargo_toml() {
+            let arguments = ["cargo-valgrind", "valgrind"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            // note, that currently this won't work inside sub-directories
+            let expected_path = PathBuf::from("Cargo.toml").canonicalize().unwrap();
+
+            assert_eq!(manifest(&cli).unwrap(), expected_path);
+        }
+
+        #[test]
+        fn manifest_path_can_be_overridden() {
+            // note, that it is not checked, whether or not this is a cargo manifest
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--manifest-path",
+                "src/lib.rs",
+            ];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            let expected_path = PathBuf::from("src/lib.rs").canonicalize().unwrap();
+
+            assert_eq!(manifest(&cli).unwrap(), expected_path);
+        }
+
+        #[test]
+        fn invalid_manifest_paths_fail() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--manifest-path",
+                "asdf_non-existent/Cargo.toml",
+            ];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
+
+            assert!(manifest(&cli).is_err());
+        }
     }
 
-    #[test]
-    fn missing_release_flag_runs_in_debug_mode() {
-        let arguments = ["cargo-valgrind", "valgrind"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
+    mod target_flags {
+        use super::*;
 
-        assert_eq!(build_type(&cli), Build::Debug);
+        #[test]
+        fn binary_flag_requires_argument() {
+            let arguments = ["cargo-valgrind", "valgrind", "--bin"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn binary_flag_conflicts_with_examples() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bin",
+                "foo",
+                "--example",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn binary_flag_conflicts_with_tests() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bin",
+                "foo",
+                "--test",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn binary_flag_conflicts_with_benchmarks() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bin",
+                "foo",
+                "--bench",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn example_flag_requires_argument() {
+            let arguments = ["cargo-valgrind", "valgrind", "--example"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn example_flag_conflicts_with_binaries() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--example",
+                "foo",
+                "--bin",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn example_flag_conflicts_with_tests() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--example",
+                "foo",
+                "--test",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn example_flag_conflicts_with_benchmarks() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--example",
+                "foo",
+                "--bench",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn benchmark_flag_requires_argument() {
+            let arguments = ["cargo-valgrind", "valgrind", "--bench"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn benchmark_flag_conflicts_with_binaries() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bench",
+                "foo",
+                "--bin",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn benchmark_flag_conflicts_with_tests() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bench",
+                "foo",
+                "--test",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn benchmark_flag_conflicts_with_examples() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--bench",
+                "foo",
+                "--examples",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn test_flag_requires_argument() {
+            let arguments = ["cargo-valgrind", "valgrind", "--test"];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn test_flag_conflicts_with_binaries() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--test",
+                "foo",
+                "--bin",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn test_flag_conflicts_with_benchmarks() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--test",
+                "foo",
+                "--bench",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+
+        #[test]
+        fn test_flag_conflicts_with_examples() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--test",
+                "foo",
+                "--examples",
+                "foo",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
     }
 
-    #[test]
-    fn release_flag_is_supported() {
-        let arguments = ["cargo-valgrind", "valgrind", "--release"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
+    mod features {
+        use super::*;
 
-        assert_eq!(build_type(&cli), Build::Release);
-    }
+        #[test]
+        fn a_feature_may_be_specified() {
+            let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
 
-    #[test]
-    fn manifest_path_defaults_to_cargo_toml() {
-        let arguments = ["cargo-valgrind", "valgrind"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
+            assert_eq!(
+                features(&cli).collect::<Vec<_>>(),
+                vec![String::from("asdf")]
+            );
+        }
 
-        // note, that currently this won't work inside sub-directories
-        let expected_path = PathBuf::from("Cargo.toml").canonicalize().unwrap();
+        #[test]
+        fn multiple_features_can_be_space_separated() {
+            let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf jklö"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
 
-        assert_eq!(manifest(&cli).unwrap(), expected_path);
-    }
+            assert_eq!(
+                features(&cli).collect::<Vec<_>>(),
+                vec![String::from("asdf"), String::from("jklö")]
+            );
+        }
 
-    #[test]
-    fn manifest_path_can_be_overridden() {
-        // note, that it is not checked, whether or not this is a cargo manifest
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--manifest-path",
-            "src/lib.rs",
-        ];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
+        #[test]
+        fn multiple_features_can_be_comma_separated() {
+            let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf,jklö"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
 
-        let expected_path = PathBuf::from("src/lib.rs").canonicalize().unwrap();
+            assert_eq!(
+                features(&cli).collect::<Vec<_>>(),
+                vec![String::from("asdf"), String::from("jklö")]
+            );
+        }
 
-        assert_eq!(manifest(&cli).unwrap(), expected_path);
-    }
+        #[test]
+        fn multiple_features_can_be_comma_space_separated() {
+            let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf, jklö"];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
 
-    #[test]
-    fn invalid_manifest_paths_fail() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--manifest-path",
-            "asdf_non-existent/Cargo.toml",
-        ];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
+            assert_eq!(
+                features(&cli).collect::<Vec<_>>(),
+                vec![String::from("asdf"), String::from("jklö")]
+            );
+        }
 
-        assert!(manifest(&cli).is_err());
-    }
+        #[test]
+        fn feature_flag_is_additive() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--features",
+                "asdf",
+                "--features",
+                "jklö",
+            ];
+            let cli = cli().get_matches_from(arguments.iter());
+            let cli = cli.subcommand_matches("valgrind").unwrap();
 
-    #[test]
-    fn binary_flag_requires_argument() {
-        let arguments = ["cargo-valgrind", "valgrind", "--bin"];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn binary_flag_conflicts_with_examples() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bin",
-            "foo",
-            "--example",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn binary_flag_conflicts_with_tests() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bin",
-            "foo",
-            "--test",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn binary_flag_conflicts_with_benchmarks() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bin",
-            "foo",
-            "--bench",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn example_flag_requires_argument() {
-        let arguments = ["cargo-valgrind", "valgrind", "--example"];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn example_flag_conflicts_with_binaries() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--example",
-            "foo",
-            "--bin",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn example_flag_conflicts_with_tests() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--example",
-            "foo",
-            "--test",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn example_flag_conflicts_with_benchmarks() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--example",
-            "foo",
-            "--bench",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn benchmark_flag_requires_argument() {
-        let arguments = ["cargo-valgrind", "valgrind", "--bench"];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn benchmark_flag_conflicts_with_binaries() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bench",
-            "foo",
-            "--bin",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn benchmark_flag_conflicts_with_tests() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bench",
-            "foo",
-            "--test",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn benchmark_flag_conflicts_with_examples() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--bench",
-            "foo",
-            "--examples",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn test_flag_requires_argument() {
-        let arguments = ["cargo-valgrind", "valgrind", "--test"];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn test_flag_conflicts_with_binaries() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--test",
-            "foo",
-            "--bin",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn test_flag_conflicts_with_benchmarks() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--test",
-            "foo",
-            "--bench",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn test_flag_conflicts_with_examples() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--test",
-            "foo",
-            "--examples",
-            "foo",
-        ];
-        assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
-    }
-
-    #[test]
-    fn a_feature_may_be_specified() {
-        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
-
-        assert_eq!(
-            features(&cli).collect::<Vec<_>>(),
-            vec![String::from("asdf")]
-        );
-    }
-
-    #[test]
-    fn multiple_features_can_be_space_separated() {
-        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf jklö"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
-
-        assert_eq!(
-            features(&cli).collect::<Vec<_>>(),
-            vec![String::from("asdf"), String::from("jklö")]
-        );
-    }
-
-    #[test]
-    fn multiple_features_can_be_comma_separated() {
-        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf,jklö"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
-
-        assert_eq!(
-            features(&cli).collect::<Vec<_>>(),
-            vec![String::from("asdf"), String::from("jklö")]
-        );
-    }
-
-    #[test]
-    fn multiple_features_can_be_comma_space_separated() {
-        let arguments = ["cargo-valgrind", "valgrind", "--features", "asdf, jklö"];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
-
-        assert_eq!(
-            features(&cli).collect::<Vec<_>>(),
-            vec![String::from("asdf"), String::from("jklö")]
-        );
-    }
-
-    #[test]
-    fn feature_flag_is_additive() {
-        let arguments = [
-            "cargo-valgrind",
-            "valgrind",
-            "--features",
-            "asdf",
-            "--features",
-            "jklö",
-        ];
-        let cli = cli().get_matches_from(arguments.iter());
-        let cli = cli.subcommand_matches("valgrind").unwrap();
-
-        assert_eq!(
-            features(&cli).collect::<Vec<_>>(),
-            vec![String::from("asdf"), String::from("jklö")]
-        );
+            assert_eq!(
+                features(&cli).collect::<Vec<_>>(),
+                vec![String::from("asdf"), String::from("jklö")]
+            );
+        }
     }
 }
