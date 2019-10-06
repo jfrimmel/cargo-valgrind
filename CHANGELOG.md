@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.2.2
 - Better error message if valgrind is not found
 - support multiple feature flags, similar to normal `cargo`
 - support comma separation of features, similar to normal `cargo`
