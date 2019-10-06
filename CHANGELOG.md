@@ -4,6 +4,7 @@
 - Better error message if valgrind is not found
 - support multiple feature flags, similar to normal `cargo`
 - support comma separation of features, similar to normal `cargo`
+- Bugfix: replace `-` by `_` in integration test target names
 
 ## Version 1.2.1
 - Support running of integration tests (normal tests are not yet supported)
