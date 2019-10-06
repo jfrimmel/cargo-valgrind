@@ -707,7 +707,7 @@ fn find_newest_file<P: AsRef<Path>>(prefix: P) -> Option<PathBuf> {
             entry
                 .file_name()
                 .to_str()
-                .map(|s| s.starts_with(file_name))
+                .map(|s| s.starts_with(&file_name.replace('-', "_")))
                 .unwrap_or_default()
         })
         .max_by_key(|entry| get_time(entry).unwrap_or_default())
