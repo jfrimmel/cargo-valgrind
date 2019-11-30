@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.2.3
+- Updated dependencies
+
 ## Version 1.2.2
 - Better error message if valgrind is not found
 - support multiple feature flags, similar to normal `cargo`
