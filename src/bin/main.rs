@@ -879,4 +879,47 @@ mod tests {
             assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
         }
     }
+
+    mod user_flags {
+        use super::*;
+
+        #[test]
+        fn without() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn with_single() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+                "omg",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn with_multiple() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+                "omg",
+                "yeah",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+    }
 }
