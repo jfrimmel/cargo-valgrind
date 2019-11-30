@@ -120,6 +120,7 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                     Arg::with_name("user-flags")
                         .help("Flags, that are passed to the analyzed binary")
                         .last(true)
+                        .multiple(true)
                         .value_name("[args]"),
                 ),
         )
