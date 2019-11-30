@@ -115,6 +115,12 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                                     .map_or(Ok(()), |s| Err(s.into()))
                             }
                         }),
+                )
+                .arg(
+                    Arg::with_name("user-flags")
+                        .help("Flags, that are passed to the analyzed binary")
+                        .last(true)
+                        .value_name("[args]"),
                 ),
         )
 }
