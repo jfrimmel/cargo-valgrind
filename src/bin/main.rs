@@ -81,6 +81,13 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .value_name("FEATURES"),
                 )
                 .arg(
+                    Arg::with_name("user-flags")
+                        .help("Flags, that are passed to the analyzed binary")
+                        .last(true)
+                        .multiple(true)
+                        .value_name("[args]"),
+                )
+                .arg(
                     Arg::with_name("leak-check")
                         .help("Select, whether each leak or only a summary should be reported")
                         .long("leak-check")
@@ -115,13 +122,6 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                                     .map_or(Ok(()), |s| Err(s.into()))
                             }
                         }),
-                )
-                .arg(
-                    Arg::with_name("user-flags")
-                        .help("Flags, that are passed to the analyzed binary")
-                        .last(true)
-                        .multiple(true)
-                        .value_name("[args]"),
                 ),
         )
 }
@@ -273,6 +273,7 @@ fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Res
         }
         _ => {}
     }
+    valgrind.with_user_flags(cli.values_of("user-flags"));
     let errors = valgrind.analyze(target.real_path())?;
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
