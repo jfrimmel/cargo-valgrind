@@ -367,12 +367,26 @@ pub fn valgrind<P: AsRef<Path>>(path: P) -> Result<Vec<Leak>, Error> {
 pub struct Valgrind {
     /// The valgrind command to execute.
     valgrind: Command,
+    /// The user specied flags to the analyzed binary.
+    user_flags: Vec<String>,
 }
 impl Valgrind {
     /// Start configuring the valgrind command that will analyze the target.
     pub fn new() -> Self {
         Self {
             valgrind: Command::new("valgrind"),
+            user_flags: vec![],
+        }
+    }
+
+    /// Add user flags to the binary.
+    ///
+    /// This function can be called multiple times, the flags are appended in
+    /// this case.
+    pub fn with_user_flags(&mut self, user_flags: Option<impl Iterator<Item = impl AsRef<str>>>) {
+        if let Some(user_flags) = user_flags {
+            self.user_flags
+                .extend(user_flags.map(|x| x.as_ref().to_string()));
         }
     }
 
@@ -455,6 +469,7 @@ impl Valgrind {
             .arg("--xml=yes")
             .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
             .arg(path.as_ref())
+            .args(&self.user_flags)
             .spawn()
             .map_err(|e| match e.kind() {
                 ErrorKind::NotFound => Error::new(

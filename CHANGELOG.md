@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.3.0
+- Support user flags for the analyzed binary.
+
 ## Version 1.2.3
 - Updated dependencies
 

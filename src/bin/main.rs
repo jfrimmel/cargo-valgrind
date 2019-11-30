@@ -81,6 +81,13 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
                         .value_name("FEATURES"),
                 )
                 .arg(
+                    Arg::with_name("user-flags")
+                        .help("Flags, that are passed to the analyzed binary")
+                        .last(true)
+                        .multiple(true)
+                        .value_name("[args]"),
+                )
+                .arg(
                     Arg::with_name("leak-check")
                         .help("Select, whether each leak or only a summary should be reported")
                         .long("leak-check")
@@ -266,6 +273,7 @@ fn analyze_target(cli: &ArgMatches<'_>, target: &Target, manifest: &Path) -> Res
         }
         _ => {}
     }
+    valgrind.with_user_flags(cli.values_of("user-flags"));
     let errors = valgrind.analyze(target.real_path())?;
     if errors.is_empty() {
         Ok(Report::NoErrorDetected)
@@ -870,6 +878,49 @@ mod tests {
                 "definite,all",
             ];
             assert!(cli().get_matches_from_safe(arguments.iter()).is_err());
+        }
+    }
+
+    mod user_flags {
+        use super::*;
+
+        #[test]
+        fn without() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn with_single() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+                "omg",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
+        }
+
+        #[test]
+        fn with_multiple() {
+            let arguments = [
+                "cargo-valgrind",
+                "valgrind",
+                "--show-leak-kinds",
+                "indirect",
+                "--",
+                "omg",
+                "yeah",
+            ];
+            assert!(cli().get_matches_from_safe(arguments.iter()).is_ok());
         }
     }
 }
