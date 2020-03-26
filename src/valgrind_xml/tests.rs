@@ -1,10 +1,13 @@
 use super::{Error, Frame, Kind, Output, Resources};
+use std::{fs, io::BufReader};
+
+use serde_xml_rs::{from_reader, from_str};
 
 #[test]
 fn sample_output() {
-    let xml: Output = serde_xml_rs::from_reader(
-        std::fs::File::open("src/valgrind_xml/memory-leaks.xml").expect("Could not open test file"),
-    )
+    let xml: Output = from_reader(BufReader::new(
+        fs::File::open("src/valgrind_xml/memory-leaks.xml").expect("Could not open test file"),
+    ))
     .expect("Could not read test file");
 
     let errors = xml.errors.expect("There are errors in the test case");
@@ -55,7 +58,7 @@ fn sample_output() {
 
 #[test]
 fn unique_ids_have_to_be_in_hex_with_prefix() {
-    let result: Error = serde_xml_rs::from_str(
+    let result: Error = from_str(
         r"<error>\
            <unique>0xDEAD1234</unique>\
            <tid>1</tid>\
@@ -78,7 +81,7 @@ fn unique_ids_have_to_be_in_hex_with_prefix() {
 
 #[test]
 fn missing_hex_prefix_is_an_error() {
-    let result: Result<Error, _> = serde_xml_rs::from_str(
+    let result: Result<Error, _> = from_str(
         r"<error>\
            <unique>0DEADBEEF</unique>\
            <tid>1</tid>\
@@ -97,7 +100,7 @@ fn missing_hex_prefix_is_an_error() {
     );
     assert!(result.is_err());
 
-    let result: Result<Error, _> = serde_xml_rs::from_str(
+    let result: Result<Error, _> = from_str(
         r"<error>\
            <unique>xDEADBEEF</unique>\
            <tid>1</tid>\
@@ -116,7 +119,7 @@ fn missing_hex_prefix_is_an_error() {
     );
     assert!(result.is_err());
 
-    let result: Result<Error, _> = serde_xml_rs::from_str(
+    let result: Result<Error, _> = from_str(
         r"<error>\
            <unique>DEADBEEF</unique>\
            <tid>1</tid>\
@@ -138,7 +141,7 @@ fn missing_hex_prefix_is_an_error() {
 
 #[test]
 fn invalid_hex_digits_are_an_error() {
-    let result: Result<Error, _> = serde_xml_rs::from_str(
+    let result: Result<Error, _> = from_str(
         r"<error>\
            <unique>0xhello</unique>\
            <tid>1</tid>\
@@ -160,7 +163,7 @@ fn invalid_hex_digits_are_an_error() {
 
 #[test]
 fn hex_and_prefix_case_is_ignored() {
-    let result: Error = serde_xml_rs::from_str(
+    let result: Error = from_str(
         r"<error>\
            <unique>0XdEaDbEeF</unique>\
            <tid>1</tid>\
@@ -183,7 +186,7 @@ fn hex_and_prefix_case_is_ignored() {
 
 #[test]
 fn unique_id_is_64bit() {
-    let result: Error = serde_xml_rs::from_str(
+    let result: Error = from_str(
         r"<error>\
            <unique>0x123456789ABCDEF0</unique>\
            <tid>1</tid>\
