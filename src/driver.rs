@@ -1,6 +1,7 @@
 //! A module providing the wrapping driver for a custom runner.
 
 use std::env;
+use std::ffi::OsString;
 use std::io;
 use std::path::Path;
 use std::process::Command;
@@ -41,10 +42,13 @@ pub fn driver() -> io::Result<bool> {
     let runner = format!("CARGO_TARGET_{}_RUNNER", host);
 
     /* cargo run with a custom runner */
+    let cargo_valgrind = env::args_os()
+        .next()
+        .unwrap_or_else(|| OsString::from("cargo-valgrind"));
     Ok(Command::new(cargo)
         .args(env::args_os().skip(2))
         .envs(env::vars_os())
-        .env(runner, "valgrind") // TODO: call the own binary with a special parameter
+        .env(runner, cargo_valgrind)
         .spawn()?
         .wait()?
         .success())

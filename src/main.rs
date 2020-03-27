@@ -21,15 +21,36 @@ mod valgrind_xml;
 
 use std::env;
 use std::ffi::OsString;
+use std::io::Read;
+use std::net::{SocketAddr, TcpListener};
 use std::process;
 
 fn main() {
     if env::args_os().nth(1) == Some(OsString::from("valgrind")) {
         if !driver::driver().expect("Could not execute subcommand") {
-            process::exit(1);
+            process::exit(200);
         }
     } else {
-        let x: Vec<_> = env::args().skip(1).collect();
-        println!("valgrind [valgrind options] {}", x.join(" "));
+        // port selected by OS
+        let address: SocketAddr = ([127, 0, 0, 1], 0).into();
+        let listener = TcpListener::bind(address).unwrap();
+        let address = listener.local_addr().unwrap();
+
+        let mut cargo = std::process::Command::new("valgrind")
+            .arg("--xml=yes")
+            .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
+            .args(env::args_os().skip(1))
+            .spawn()
+            .unwrap();
+
+        let (mut listener, _socket) = listener.accept().unwrap();
+
+        let success = cargo.wait().unwrap().success();
+        let mut xml = String::new();
+        listener.read_to_string(&mut xml).unwrap();
+        println!("{}", xml);
+        if !success {
+            process::exit(100);
+        }
     }
 }
