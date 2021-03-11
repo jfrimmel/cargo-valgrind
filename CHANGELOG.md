@@ -1,5 +1,15 @@
 # Changelog
 
+## unreleased
+Breaking API and CLI change!
+- Support running _every_ `cargo` executable (binary, unit tests, doctests, ...)
+- changed command line
+    - `cargo valgrind` -> `cargo valgrind run`
+    - `cargo valgrind --tests` -> `cargo valgrind test`
+    - `cargo valgrind --example asdf` -> `cargo valgrind run --example asdf`
+    - etc.
+- currently no valgrind parameter support
+
 ## Version 1.3.0
 - Support user flags for the analyzed binary.
 

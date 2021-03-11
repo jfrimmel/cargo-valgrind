@@ -4,7 +4,7 @@
 [![Latest version](https://img.shields.io/crates/v/cargo-valgrind.svg)](https://crates.io/crates/cargo-valgrind)
 [![Documentation](https://docs.rs/cargo-valgrind/badge.svg)](https://docs.rs/cargo-valgrind)
 
-This command extends cargo with the capability to directly run `valgrind` on the executable (either a bin-crate or an example).
+This command extends cargo with the capability to directly run `valgrind` on any crate executable.
 The output of valgrind is then used to mark the binary as pass/fail.
 
 This command should not be necessary for ordinary Rust programs, especially if you are only using safe Rust code.
@@ -30,11 +30,11 @@ fn main() {
 }
 ```
 The memory of the variable `string` will never be freed.
-If you run `cargo valgrind` it your shell, it detects the leak:
+If you run `cargo valgrind run` it your shell, it detects the leak:
 ```bash
-$ cargo valgrind
+$ cargo valgrind run
     Finished dev [unoptimized + debuginfo] target(s) in 0.01s
-   Analyzing `target/debug/cstring`
+     Running `target/debug/cstring`
 Test
        Error Leaked 5 bytes
         Info at realloc (vg_replace_malloc.c:826)
@@ -59,7 +59,11 @@ Test
      Summary Leaked 5 B total
 ```
 Un-commenting the `unsafe { CString::from_raw(ptr) };` re-takes the memory and frees it correctly.
-`cargo valgrind` will compile the binary for you and won't detect a leak, since there is no leak anymore.
+`cargo valgrind run` will compile the binary for you and won't detect a leak, since there is no leak anymore.
+
+_Note_: users of `cargo-valgrind` version 1.x should mind the changed command line.
+Previously there was a `cargo valgrind` subcommand, that replaced the `cargo run` or `cargo test` commands.
+Now the command line is `cargo valgrind <command>`, where `<command>` can be any normal cargo subcommand.
 
 # Installation
 ## Requirements
