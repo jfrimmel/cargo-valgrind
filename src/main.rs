@@ -12,7 +12,6 @@
     clippy::missing_docs_in_private_items,
     clippy::multiple_inherent_impl,
     clippy::option_unwrap_used,
-    clippy::print_stdout,
     clippy::result_unwrap_used
 )]
 
@@ -21,12 +20,29 @@ mod valgrind_xml;
 
 use colored::Colorize as _;
 use std::env;
-use std::ffi::OsString;
 use std::net::{SocketAddr, TcpListener};
 use std::process::{self, Command};
 
 fn main() {
-    if env::args_os().nth(1) == Some(OsString::from("valgrind")) {
+    let number_of_arguments = || env::args_os().skip(0).count();
+    let help_requested = || env::args_os().any(|arg| arg == "--help" || arg == "-h");
+    let is_cargo_subcommand = || env::args_os().nth(1).map_or(false, |arg| arg == "valgrind");
+    if number_of_arguments() == 0 || help_requested() {
+        println!(
+            "cargo valgrind {version}\n\
+            {authors}\n\
+            Analyze your Rust binary for memory errors\n\
+            \n\
+            This program is a argo subcommand, i.e. it integrates with the \
+            normal cargo workflow. You specify this subcommand and another \
+            \"target\", what valgrind should do. For example: `cargo valgrind \
+            run` will do the same thing as `cargo run` (i.e. compile and run \
+            your binary), but the execution will be done using valgrind. \
+            Similarly to execute the tests, simply use `cargo valgrind test`.",
+            version = env!("CARGO_PKG_VERSION"),
+            authors = env!("CARGO_PKG_AUTHORS").replace(':', ", "),
+        );
+    } else if is_cargo_subcommand() {
         if !driver::driver().expect("Could not execute subcommand") {
             process::exit(200);
         }
