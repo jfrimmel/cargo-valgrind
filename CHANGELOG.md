@@ -1,6 +1,6 @@
 # Changelog
 
-## unreleased
+## Version 2.0.0
 Breaking API and CLI change!
 - Support running _every_ `cargo` executable (binary, unit tests, doctests, ...)
 - changed command line

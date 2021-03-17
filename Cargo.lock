@@ -65,7 +65,7 @@ checksum = "716960a18f978640f25101b5cbf1c6f6b0d3192fab36a2d98ca96f0ecbe41010"
 
 [[package]]
 name = "cargo-valgrind"
-version = "1.3.0"
+version = "2.0.0"
 dependencies = [
  "assert_cmd",
  "bytesize",
