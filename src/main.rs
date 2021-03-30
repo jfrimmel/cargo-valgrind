@@ -16,6 +16,7 @@
 )]
 
 mod driver;
+mod panic;
 mod valgrind_xml;
 
 use colored::Colorize as _;
@@ -24,6 +25,8 @@ use std::net::{SocketAddr, TcpListener};
 use std::process::{self, Command};
 
 fn main() {
+    panic::replace_hook();
+
     let number_of_arguments = || env::args_os().skip(0).count();
     let help_requested = || env::args_os().any(|arg| arg == "--help" || arg == "-h");
     let is_cargo_subcommand = || env::args_os().nth(1).map_or(false, |arg| arg == "valgrind");
