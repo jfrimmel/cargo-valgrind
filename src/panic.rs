@@ -1,15 +1,14 @@
 //! Provides the custom panic hook.
 
-use std::panic::{self, PanicInfo};
+use std::panic;
 
 /// Replaces any previous hook with the custom hook of this application.
 ///
 /// This custom hook points the user to the project repository and asks them to
 /// open a bug report.
 pub fn replace_hook() {
-    panic::set_hook(Box::new(|panic: &PanicInfo| {
-        let payload = panic.payload();
-        let location = panic.location();
+    let old_hook = panic::take_hook();
+    panic::set_hook(Box::new(move |panic| {
         eprintln!(
             "Oooops. cargo valgrind unexpectedly crashed. This is a bug!\n\
             \n\
@@ -19,22 +18,8 @@ pub fn replace_hook() {
             \n\
             To make fixing the error more easy, please provide the information \
             below as well as additional information on which project the error \
-            occurred or how to reproduce it.\n\
-            \n\
-            Panic '{}' in {}:{}:{}",
-            if let Some(s) = payload.downcast_ref::<String>() {
-                s
-            } else if let Some(s) = payload.downcast_ref::<&str>() {
-                s
-            } else {
-                fn type_name<T: ?Sized>(_val: &T) -> &str {
-                    std::any::type_name::<T>()
-                }
-                type_name(payload)
-            },
-            location.map_or("<unknown>", |l| l.file()),
-            location.map_or_else(|| String::from("??"), |l| l.line().to_string()),
-            location.map_or_else(|| String::from("??"), |l| l.column().to_string()),
+            occurred or how to reproduce it.\n"
         );
+        old_hook(panic)
     }));
 }
