@@ -96,6 +96,9 @@ fn main() {
                 127
             }
             Ok(_) => 0,
+            Err(valgrind::Error::MalformedOutput(e)) => {
+                panic!("malformed or unexpected valgrind output: {}", e)
+            }
             Err(e) => {
                 eprintln!("{}: {}", "error".red().bold(), e);
                 1
