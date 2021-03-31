@@ -2,9 +2,9 @@
 
 pub mod xml;
 
-use std::ffi::OsStr;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
+use std::{ffi::OsStr, process::Stdio};
 
 #[derive(Debug)]
 pub enum Error {
@@ -17,7 +17,9 @@ pub enum Error {
     /// The sub-process could not be waited on.
     ProcessFailed,
     /// Valgrind execution did fail.
-    ValgrindFailure,
+    ///
+    /// The error output of valgrind is captured.
+    ValgrindFailure(String),
     /// The valgrind output was malformed or otherwise unexpected.
     MalformedOutput(serde_xml_rs::Error),
 }
@@ -37,21 +39,40 @@ where
     let listener = TcpListener::bind(address).map_err(|_| Error::SocketConnection)?;
     let address = listener.local_addr().map_err(|_| Error::SocketConnection)?;
 
-    let mut cargo = Command::new("valgrind")
+    let cargo = Command::new("valgrind")
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
         .args(command)
+        .stderr(Stdio::piped())
         .spawn()
         .map_err(|_| Error::ValgrindNotInstalled)?;
 
-    // collect the output of valgrind
-    let (listener, _) = listener.accept().map_err(|_| Error::SocketConnection)?;
-    let xml: xml::Output = serde_xml_rs::from_reader(listener).map_err(Error::MalformedOutput)?;
+    // spawn a new thread, that receives the XML and parses it. This has to be
+    // a separate execution unit (a thread is currently used, but an `async`
+    // task would be suitable as well), as the `accept()` call blocks until the
+    // valgrind binary writes something to the TCP connection. This is normally
+    // fine, but if we consider errors, e.g. wrong command line flags, valgrind
+    // won't write anything to the connection, so the program will hang forever.
+    // The thread can simply be thrown away, if valgrind fails.
+    let xml = std::thread::spawn(move || {
+        // collect the output of valgrind
+        let (listener, _) = listener.accept().map_err(|_| Error::SocketConnection)?;
+        let xml: xml::Output =
+            serde_xml_rs::from_reader(listener).map_err(Error::MalformedOutput)?;
+        Ok(xml)
+    });
 
-    match cargo.wait() {
-        Ok(result) if result.success() => Ok(xml),
-        Err(_) => Err(Error::ProcessFailed),
-        Ok(_) => Err(Error::ValgrindFailure),
+    let output = cargo.wait_with_output().map_err(|_| Error::ProcessFailed)?;
+    if output.status.success() {
+        let xml = xml.join().expect("Reader-thread panicked")?;
+        Ok(xml)
+    } else {
+        // this does not really terminalte the thread, but detaches it. Despite
+        // that, the thread will be killed, if the main thread exits.
+        drop(xml);
+        Err(Error::ValgrindFailure(
+            String::from_utf8_lossy(&output.stderr).to_string(),
+        ))
     }
 
     // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
