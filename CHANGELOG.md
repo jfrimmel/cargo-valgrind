@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- Check, if valgrind is installed and print a helpful error if not
+- Handle other valgrind errors more gracefully
+- Add a custom panic hook, that points the user to the bug-tracker
+- Format help and panic messages depending on the terminal size
+
 ## Version 2.0.0
 Breaking API and CLI change!
 - Support running _every_ `cargo` executable (binary, unit tests, doctests, ...)
