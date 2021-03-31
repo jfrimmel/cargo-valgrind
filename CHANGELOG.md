@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 2.0.1
 - Check, if valgrind is installed and print a helpful error if not
 - Handle other valgrind errors more gracefully
 - Add a custom panic hook, that points the user to the bug-tracker
