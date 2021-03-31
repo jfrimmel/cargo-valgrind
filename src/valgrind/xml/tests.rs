@@ -6,7 +6,7 @@ use serde_xml_rs::{from_reader, from_str};
 #[test]
 fn sample_output() {
     let xml: Output = from_reader(BufReader::new(
-        fs::File::open("src/valgrind_xml/memory-leaks.xml").expect("Could not open test file"),
+        fs::File::open("src/valgrind/xml/memory-leaks.xml").expect("Could not open test file"),
     ))
     .expect("Could not read test file");
 

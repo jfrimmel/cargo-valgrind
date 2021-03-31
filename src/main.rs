@@ -17,12 +17,11 @@
 
 mod driver;
 mod panic;
-mod valgrind_xml;
+mod valgrind;
 
 use colored::Colorize as _;
 use std::env;
-use std::net::{SocketAddr, TcpListener};
-use std::process::{self, Command};
+use std::process;
 
 fn main() {
     panic::replace_hook();
@@ -61,26 +60,8 @@ fn main() {
         // first argument is the command to execute.
         let command = env::args_os().skip(1);
 
-        // port selected by OS
-        let address: SocketAddr = ([127, 0, 0, 1], 0).into();
-        let listener = TcpListener::bind(address).unwrap();
-        let address = listener.local_addr().unwrap();
-
-        let mut cargo = Command::new("valgrind")
-            .arg("--xml=yes")
-            .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
-            .args(command)
-            .spawn()
-            .expect("Valgrind is not installed or cannot be started");
-
-        // collect the output of valgrind
-        let (listener, _socket) = listener.accept().unwrap();
-        let xml: valgrind_xml::Output =
-            serde_xml_rs::from_reader(listener).expect("Cannot parse valgrind output");
-        let success = cargo.wait().unwrap().success();
-        if !success {
-            process::exit(100);
-        } else if let Some(errors) = xml.errors {
+        let xml = valgrind::execute(command).expect("Error during valgrind execution");
+        if let Some(errors) = xml.errors {
             // format the output in a helpful manner
             for error in &errors {
                 eprintln!(
@@ -105,7 +86,5 @@ fn main() {
 
             process::exit(127);
         }
-
-        // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
     }
 }
