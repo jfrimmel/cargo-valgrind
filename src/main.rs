@@ -31,7 +31,7 @@ fn main() {
     let help_requested = || env::args_os().any(|arg| arg == "--help" || arg == "-h");
     let is_cargo_subcommand = || env::args_os().nth(1).map_or(false, |arg| arg == "valgrind");
     if number_of_arguments() == 0 || help_requested() {
-        println!(
+        let text = format!(
             "cargo valgrind {version}\n\
             {authors}\n\
             Analyze your Rust binary for memory errors\n\
@@ -45,6 +45,13 @@ fn main() {
             version = env!("CARGO_PKG_VERSION"),
             authors = env!("CARGO_PKG_AUTHORS").replace(':', ", "),
         );
+        #[cfg(feature = "textwrap")]
+        let text = textwrap::wrap(
+            &textwrap::dedent(&text).trim_start(),
+            textwrap::Options::with_termwidth(),
+        )
+        .join("\n");
+        println!("{}", text);
     } else if is_cargo_subcommand() {
         if !driver::driver().expect("Could not execute subcommand") {
             process::exit(200);
