@@ -23,6 +23,33 @@ use colored::Colorize as _;
 use std::env;
 use std::process;
 
+/// Nicely format the errors in the valgrind output, if there are any.
+fn display_error(errors: &[valgrind::xml::Error]) {
+    // format the output in a helpful manner
+    for error in errors {
+        eprintln!(
+            "{:>12} leaked {} in {} block{}",
+            "Error".red().bold(),
+            bytesize::to_string(error.resources.bytes as _, true),
+            error.resources.blocks,
+            if error.resources.blocks == 1 { "" } else { "s" }
+        );
+        let mut info = Some("Info".cyan().bold());
+        error
+            .stack_trace
+            .frames
+            .iter()
+            .for_each(|frame| eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame));
+    }
+
+    let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
+    eprintln!(
+        "{:>12} Leaked {} total",
+        "Summary".red().bold(),
+        bytesize::to_string(total as _, true)
+    );
+}
+
 fn main() {
     panic::replace_hook();
 
@@ -60,31 +87,20 @@ fn main() {
         // first argument is the command to execute.
         let command = env::args_os().skip(1);
 
-        let xml = valgrind::execute(command).expect("Error during valgrind execution");
-        if let Some(errors) = xml.errors {
-            // format the output in a helpful manner
-            for error in &errors {
-                eprintln!(
-                    "{:>12} leaked {} in {} block{}",
-                    "Error".red().bold(),
-                    bytesize::to_string(error.resources.bytes as _, true),
-                    error.resources.blocks,
-                    if error.resources.blocks == 1 { "" } else { "s" }
-                );
-                let mut info = Some("Info".cyan().bold());
-                error.stack_trace.frames.iter().for_each(|frame| {
-                    eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame)
-                });
+        let exit_code = match valgrind::execute(command) {
+            Ok(valgrind::xml::Output {
+                errors: Some(errors),
+                ..
+            }) => {
+                display_error(&errors);
+                127
             }
-
-            let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
-            eprintln!(
-                "{:>12} Leaked {} total",
-                "Summary".red().bold(),
-                bytesize::to_string(total as _, true)
-            );
-
-            process::exit(127);
-        }
+            Ok(_) => 0,
+            Err(e) => {
+                eprintln!("{}: {}", "error".red().bold(), e);
+                1
+            }
+        };
+        process::exit(exit_code);
     }
 }

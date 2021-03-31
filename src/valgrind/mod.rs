@@ -2,10 +2,12 @@
 
 pub mod xml;
 
+use std::fmt;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{ffi::OsStr, process::Stdio};
 
+/// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
 pub enum Error {
     /// The `valgrind` binary is not installed or not executable.
@@ -23,8 +25,18 @@ pub enum Error {
     /// The valgrind output was malformed or otherwise unexpected.
     MalformedOutput(serde_xml_rs::Error),
 }
-// TODO: impl std::error::Error for Error
-// TODO: impl fmt::Display for Error
+impl std::error::Error for Error {}
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::ValgrindNotInstalled => write!(f, "valgrind is not installed"),
+            Self::SocketConnection => write!(f, "local TCP I/O error"),
+            Self::ProcessFailed => write!(f, "cannot start valgrind process"),
+            Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {}", s),
+            Self::MalformedOutput(e) => write!(f, "unexpected valgrind output: {}", e),
+        }
+    }
+}
 
 /// Execute a certain command inside of valgrind and collect the [`Output`].
 ///
