@@ -17,12 +17,38 @@
 
 mod driver;
 mod panic;
-mod valgrind_xml;
+mod valgrind;
 
 use colored::Colorize as _;
 use std::env;
-use std::net::{SocketAddr, TcpListener};
-use std::process::{self, Command};
+use std::process;
+
+/// Nicely format the errors in the valgrind output, if there are any.
+fn display_error(errors: &[valgrind::xml::Error]) {
+    // format the output in a helpful manner
+    for error in errors {
+        eprintln!(
+            "{:>12} leaked {} in {} block{}",
+            "Error".red().bold(),
+            bytesize::to_string(error.resources.bytes as _, true),
+            error.resources.blocks,
+            if error.resources.blocks == 1 { "" } else { "s" }
+        );
+        let mut info = Some("Info".cyan().bold());
+        error
+            .stack_trace
+            .frames
+            .iter()
+            .for_each(|frame| eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame));
+    }
+
+    let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
+    eprintln!(
+        "{:>12} Leaked {} total",
+        "Summary".red().bold(),
+        bytesize::to_string(total as _, true)
+    );
+}
 
 fn main() {
     panic::replace_hook();
@@ -61,51 +87,20 @@ fn main() {
         // first argument is the command to execute.
         let command = env::args_os().skip(1);
 
-        // port selected by OS
-        let address: SocketAddr = ([127, 0, 0, 1], 0).into();
-        let listener = TcpListener::bind(address).unwrap();
-        let address = listener.local_addr().unwrap();
-
-        let mut cargo = Command::new("valgrind")
-            .arg("--xml=yes")
-            .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
-            .args(command)
-            .spawn()
-            .expect("Valgrind is not installed or cannot be started");
-
-        // collect the output of valgrind
-        let (listener, _socket) = listener.accept().unwrap();
-        let xml: valgrind_xml::Output =
-            serde_xml_rs::from_reader(listener).expect("Cannot parse valgrind output");
-        let success = cargo.wait().unwrap().success();
-        if !success {
-            process::exit(100);
-        } else if let Some(errors) = xml.errors {
-            // format the output in a helpful manner
-            for error in &errors {
-                eprintln!(
-                    "{:>12} leaked {} in {} block{}",
-                    "Error".red().bold(),
-                    bytesize::to_string(error.resources.bytes as _, true),
-                    error.resources.blocks,
-                    if error.resources.blocks == 1 { "" } else { "s" }
-                );
-                let mut info = Some("Info".cyan().bold());
-                error.stack_trace.frames.iter().for_each(|frame| {
-                    eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame)
-                });
+        let exit_code = match valgrind::execute(command) {
+            Ok(valgrind::xml::Output {
+                errors: Some(errors),
+                ..
+            }) => {
+                display_error(&errors);
+                127
             }
-
-            let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
-            eprintln!(
-                "{:>12} Leaked {} total",
-                "Summary".red().bold(),
-                bytesize::to_string(total as _, true)
-            );
-
-            process::exit(127);
-        }
-
-        // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
+            Ok(_) => 0,
+            Err(e) => {
+                eprintln!("{}: {}", "error".red().bold(), e);
+                1
+            }
+        };
+        process::exit(exit_code);
     }
 }
