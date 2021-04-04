@@ -13,14 +13,14 @@ use std::panic;
 const PANIC_HEADER: &str = "
     Oooops. cargo valgrind unexpectedly crashed. This is a bug!
 
-    This is an error in this program, which should be fixed. If you can, please
-    submit a bug report at
+    This is an error in this program, which should be fixed. If you can, \
+    please submit a bug report at
 
         https://github.com/jfrimmel/cargo-valgrind/issues/new/choose
 
-    To make fixing the error more easy, please provide the information below as
-    well as additional information on which project the error occurred or how
-    to reproduce it.
+    To make fixing the error more easy, please provide the information below \
+    as well as additional information on which project the error occurred or \
+    how to reproduce it.
     ";
 
 /// Panic with a custom panic output.
