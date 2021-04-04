@@ -1,4 +1,12 @@
-//! Provides the custom panic hook.
+//! Provides the panic handling neceises.
+//!
+//! This module allows to customize the panicking of the application. First, it
+//! changes the normal panic handler to print a custom message, that guides the
+//! user to the bug tracker. Secondly, the panic message presented will change
+//! depending on the payload-type. If that panic is an implementation bug, some
+//! addition information is printed (e.g. for [`Error::MalformedOutput`]).
+//!
+//! [`Error::MalformedOutput`]: crate::valgrind::Error::MalformedOutput
 
 use std::panic;
 
@@ -14,6 +22,16 @@ const PANIC_HEADER: &str = "
     well as additional information on which project the error occurred or how
     to reproduce it.
     ";
+
+/// Panic with a custom panic output.
+///
+/// This is helpful for printing debug information to the panic message.
+#[macro_export]
+macro_rules! panic_with {
+    ($e:expr) => {
+        std::panic::panic_any($e)
+    };
+}
 
 /// Replaces any previous hook with the custom hook of this application.
 ///
@@ -32,6 +50,13 @@ pub fn replace_hook() {
         .join("\n");
         eprintln!("{}", text);
 
-        old_hook(panic)
+        if let Some(crate::valgrind::Error::MalformedOutput(e)) = panic.payload().downcast_ref() {
+            eprintln!(
+                "XML format mismatch between `valgrind` and `cargo valgrind`: {}",
+                e
+            );
+        } else {
+            old_hook(panic)
+        }
     }));
 }
