@@ -50,6 +50,12 @@ pub fn replace_hook() {
         .join("\n");
         eprintln!("{}", text);
 
+        eprintln!(
+            "{}: version {}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+
         if let Some(crate::valgrind::Error::MalformedOutput(e)) = panic.payload().downcast_ref() {
             eprintln!(
                 "XML format mismatch between `valgrind` and `cargo valgrind`: {}",
