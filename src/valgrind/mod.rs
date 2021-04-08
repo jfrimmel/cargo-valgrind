@@ -2,10 +2,10 @@
 
 pub mod xml;
 
-use std::fmt;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{ffi::OsStr, process::Stdio};
+use std::{fmt, io::Read};
 
 /// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
@@ -23,7 +23,10 @@ pub enum Error {
     /// The error output of valgrind is captured.
     ValgrindFailure(String),
     /// The valgrind output was malformed or otherwise unexpected.
-    MalformedOutput(serde_xml_rs::Error),
+    ///
+    /// This variant contains the inner deserialization error and the output of
+    /// valgrind.
+    MalformedOutput(serde_xml_rs::Error, Vec<u8>),
 }
 impl std::error::Error for Error {}
 impl fmt::Display for Error {
@@ -33,7 +36,7 @@ impl fmt::Display for Error {
             Self::SocketConnection => write!(f, "local TCP I/O error"),
             Self::ProcessFailed => write!(f, "cannot start valgrind process"),
             Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {}", s),
-            Self::MalformedOutput(e) => write!(f, "unexpected valgrind output: {}", e),
+            Self::MalformedOutput(e, _) => write!(f, "unexpected valgrind output: {}", e),
         }
     }
 }
@@ -68,9 +71,13 @@ where
     // The thread can simply be thrown away, if valgrind fails.
     let xml = std::thread::spawn(move || {
         // collect the output of valgrind
-        let (listener, _) = listener.accept().map_err(|_| Error::SocketConnection)?;
+        let (mut listener, _) = listener.accept().map_err(|_| Error::SocketConnection)?;
+        let mut output = Vec::new();
+        listener
+            .read_to_end(&mut output)
+            .map_err(|_| Error::SocketConnection)?;
         let xml: xml::Output =
-            serde_xml_rs::from_reader(listener).map_err(Error::MalformedOutput)?;
+            serde_xml_rs::from_reader(&*output).map_err(|e| Error::MalformedOutput(e, output))?;
         Ok(xml)
     });
 

@@ -8,6 +8,7 @@
 //!
 //! [`Error::MalformedOutput`]: crate::valgrind::Error::MalformedOutput
 
+use crate::valgrind::Error;
 use std::panic;
 
 const PANIC_HEADER: &str = "
@@ -56,10 +57,16 @@ pub fn replace_hook() {
             env!("CARGO_PKG_VERSION")
         );
 
-        if let Some(crate::valgrind::Error::MalformedOutput(e)) = panic.payload().downcast_ref() {
+        // intentionally not wrapped using `textwrap`, since own formatting
+        // might be applied.
+        if let Some(Error::MalformedOutput(e, content)) = panic.payload().downcast_ref() {
             eprintln!(
                 "XML format mismatch between `valgrind` and `cargo valgrind`: {}",
                 e
+            );
+            eprintln!(
+                "XML output of valgrind:\n```xml\n{}```",
+                String::from_utf8_lossy(content)
             );
         } else {
             old_hook(panic)
