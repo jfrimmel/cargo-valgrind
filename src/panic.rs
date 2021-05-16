@@ -1,19 +1,38 @@
-//! Provides the custom panic hook.
+//! Provides the panic handling neceises.
+//!
+//! This module allows to customize the panicking of the application. First, it
+//! changes the normal panic handler to print a custom message, that guides the
+//! user to the bug tracker. Secondly, the panic message presented will change
+//! depending on the payload-type. If that panic is an implementation bug, some
+//! addition information is printed (e.g. for [`Error::MalformedOutput`]).
+//!
+//! [`Error::MalformedOutput`]: crate::valgrind::Error::MalformedOutput
 
+use crate::valgrind::Error;
 use std::panic;
 
 const PANIC_HEADER: &str = "
     Oooops. cargo valgrind unexpectedly crashed. This is a bug!
 
-    This is an error in this program, which should be fixed. If you can, please
-    submit a bug report at
+    This is an error in this program, which should be fixed. If you can, \
+    please submit a bug report at
 
         https://github.com/jfrimmel/cargo-valgrind/issues/new/choose
 
-    To make fixing the error more easy, please provide the information below as
-    well as additional information on which project the error occurred or how
-    to reproduce it.
+    To make fixing the error more easy, please provide the information below \
+    as well as additional information on which project the error occurred or \
+    how to reproduce it.
     ";
+
+/// Panic with a custom panic output.
+///
+/// This is helpful for printing debug information to the panic message.
+#[macro_export]
+macro_rules! panic_with {
+    ($e:expr) => {
+        std::panic::panic_any($e)
+    };
+}
 
 /// Replaces any previous hook with the custom hook of this application.
 ///
@@ -32,6 +51,25 @@ pub fn replace_hook() {
         .join("\n");
         eprintln!("{}", text);
 
-        old_hook(panic)
+        eprintln!(
+            "{}: version {}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+
+        // intentionally not wrapped using `textwrap`, since own formatting
+        // might be applied.
+        if let Some(Error::MalformedOutput(e, content)) = panic.payload().downcast_ref() {
+            eprintln!(
+                "XML format mismatch between `valgrind` and `cargo valgrind`: {}",
+                e
+            );
+            eprintln!(
+                "XML output of valgrind:\n```xml\n{}```",
+                String::from_utf8_lossy(content)
+            );
+        } else {
+            old_hook(panic)
+        }
     }));
 }
