@@ -6,6 +6,7 @@ use std::io;
 use std::path::Path;
 use std::process::Command;
 
+/// The prefix line for the target host output.
 const HOST_PREFIX: &[u8] = b"host: ";
 
 /// Act as a driver for `cargo run`/`cargo test`, but with special runner.
