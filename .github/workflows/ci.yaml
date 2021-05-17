@@ -1,0 +1,28 @@
+name: Continous Integration
+on: pull_request
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  # build the crate on Linux, Windows and MacOS (can only be tested on Linux)
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable, nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: rustup update --no-self-update ${{ matrix.rust }} && rustup default ${{ matrix.rust }}
+      - name: Build
+        run: cargo build
+
+  # execute all tests (requires an installed valgrind)
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install valgrind
+        run: sudo apt install valgrind
+      - name: Run tests
+        run: cargo test
