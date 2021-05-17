@@ -11,6 +11,10 @@
 use crate::valgrind::Error;
 use std::panic;
 
+/// The header used in the custom panic message.
+///
+/// Every panic is prefixed with this string (but formatting might be applied).
+/// After that text, some more panic information is printed.
 const PANIC_HEADER: &str = "
     Oooops. cargo valgrind unexpectedly crashed. This is a bug!
 
@@ -45,7 +49,7 @@ pub fn replace_hook() {
         let text = PANIC_HEADER;
         #[cfg(feature = "textwrap")]
         let text = textwrap::wrap(
-            &textwrap::dedent(PANIC_HEADER).trim_start(),
+            textwrap::dedent(PANIC_HEADER).trim_start(),
             textwrap::Options::with_termwidth(),
         )
         .join("\n");

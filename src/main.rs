@@ -1,4 +1,5 @@
 //! The `cargo-valgrind` executable.
+#![forbid(unsafe_code)]
 #![deny(clippy::correctness)]
 #![warn(
     clippy::perf,
@@ -11,8 +12,9 @@
     clippy::float_cmp_const,
     clippy::missing_docs_in_private_items,
     clippy::multiple_inherent_impl,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
+    clippy::unwrap_used,
+    clippy::cargo_common_metadata,
+    clippy::used_underscore_binding
 )]
 
 mod driver;
@@ -73,7 +75,7 @@ fn main() {
         );
         #[cfg(feature = "textwrap")]
         let text = textwrap::wrap(
-            &textwrap::dedent(&text).trim_start(),
+            textwrap::dedent(&text).trim_start(),
             textwrap::Options::with_termwidth(),
         )
         .join("\n");

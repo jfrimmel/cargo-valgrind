@@ -163,11 +163,10 @@ impl<'de> Visitor<'de> for HexVisitor {
 
     fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
         let value = value.to_ascii_lowercase();
-        if value.starts_with("0x") {
-            Self::Value::from_str_radix(&value[2..], 16)
-                .map_err(|_| E::custom(format!("invalid hex number '{}'", value)))
-        } else {
-            Err(E::custom("'0x' prefix missing"))
-        }
+        let value = value
+            .strip_prefix("0x")
+            .ok_or_else(|| E::custom("'0x' prefix missing"))?;
+        Self::Value::from_str_radix(value, 16)
+            .map_err(|_| E::custom(format!("invalid hex number '{}'", value)))
     }
 }
