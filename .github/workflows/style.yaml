@@ -25,7 +25,8 @@ jobs:
         run: |
           echo '# Output of `cargo clippy`' > clippy.output
           echo '```' >> clippy.output
-          cargo clippy 2>&1 | tee -a clippy.output || true
+          # ignore dependency output lines
+          cargo clippy 2>&1 | sed -n '/Checking cargo-valgrind v.*/,$p' | tee -a clippy.output || true
           echo '```' >> clippy.output
           echo 'If your PR introduced these issues, please try to address them.' >> clippy.output
           # the clippy exit code is ignored, therefore the build always works
