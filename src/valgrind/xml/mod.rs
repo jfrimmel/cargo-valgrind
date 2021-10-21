@@ -157,7 +157,7 @@ impl Default for Resources {
     fn default() -> Self {
         Resources {
             bytes: 0,
-            blocks: 0
+            blocks: 0,
         }
     }
 }
