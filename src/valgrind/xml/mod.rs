@@ -153,6 +153,15 @@ fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D:
     deserializer.deserialize_str(HexVisitor)
 }
 
+impl Default for Resources {
+    fn default() -> Self {
+        Resources {
+            bytes: 0,
+            blocks: 0
+        }
+    }
+}
+
 /// A visitor for parsing a `u64` in the format `0xDEADBEEF`.
 struct HexVisitor;
 impl<'de> Visitor<'de> for HexVisitor {
