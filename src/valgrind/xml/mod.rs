@@ -55,6 +55,7 @@ pub struct Error {
     #[serde(deserialize_with = "deserialize_hex")]
     unique: u64,
     pub kind: Kind,
+    #[serde(default)]
     #[serde(rename = "xwhat")]
     pub resources: Resources,
     #[serde(rename = "stack")]
