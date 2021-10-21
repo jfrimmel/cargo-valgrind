@@ -78,9 +78,9 @@ where
             .map_err(|_| Error::SocketConnection)?;
         let xml: xml::Output =
             serde_xml_rs::from_reader(&*output).map(|o_: xml::Output| {
-                let mut o = o_
+                let mut o = o_;
                 if let Some(err) = o.errors {
-                    let new_err = err.into_iter().filter(|e| e.resources.bytes>0 || e.resources.blocks>0).collect()
+                    let new_err: Vec<xml::Error> = err.into_iter().filter(|e| e.resources.bytes>0 || e.resources.blocks>0).collect();
                     if new_err.len()==0 {
                         o.errors = Some(new_err)
                     } else {
