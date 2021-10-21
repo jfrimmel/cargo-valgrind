@@ -76,8 +76,8 @@ where
         listener
             .read_to_end(&mut output)
             .map_err(|_| Error::SocketConnection)?;
-        let xml: xml::Output =
-            serde_xml_rs::from_reader(&*output).map(|o_: xml::Output| {
+        let xml: xml::Output = serde_xml_rs::from_reader(&*output)
+            .map(|o_: xml::Output| {
                 let mut o = o_;
                 if let Some(err) = o.errors {
                     let new_err: Vec<xml::Error> = err.into_iter().filter(|e| e.resources.bytes>0 || e.resources.blocks>0).collect();
@@ -85,10 +85,11 @@ where
                         o.errors = Some(new_err)
                     } else {
                         o.errors = None
-                    }                    
+                    }
                 }
                 o
-            }).map_err(|e| Error::MalformedOutput(e, output))?;
+            })
+            .map_err(|e| Error::MalformedOutput(e, output))?;
         Ok(xml)
     });
 
