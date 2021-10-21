@@ -77,7 +77,7 @@ where
             .read_to_end(&mut output)
             .map_err(|_| Error::SocketConnection)?;
         let xml: xml::Output =
-            serde_xml_rs::from_reader(&*output).map(|o| into_iter().filter(|e| e.resources.bytes>0 || e.resources.blocks>0).collect()).map_err(|e| Error::MalformedOutput(e, output))?;
+            serde_xml_rs::from_reader(&*output).map(|o| o.into_iter().filter(|e| e.resources.bytes>0 || e.resources.blocks>0).collect()).map_err(|e| Error::MalformedOutput(e, output))?;
         Ok(xml)
     });
 
