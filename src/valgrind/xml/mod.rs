@@ -55,6 +55,7 @@ pub struct Error {
     #[serde(deserialize_with = "deserialize_hex")]
     unique: u64,
     pub kind: Kind,
+    #[serde(default)]
     #[serde(rename = "xwhat")]
     pub resources: Resources,
     #[serde(rename = "stack")]
@@ -150,6 +151,15 @@ impl Display for Frame {
 
 fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
     deserializer.deserialize_str(HexVisitor)
+}
+
+impl Default for Resources {
+    fn default() -> Self {
+        Resources {
+            bytes: 0,
+            blocks: 0,
+        }
+    }
 }
 
 /// A visitor for parsing a `u64` in the format `0xDEADBEEF`.
