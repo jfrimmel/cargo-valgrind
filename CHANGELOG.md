@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 2.0.2
+- Support absence of `xwhat` in valgrind XML output
+
 ## Version 2.0.1
 - Check, if valgrind is installed and print a helpful error if not
 - Handle other valgrind errors more gracefully
