@@ -1,5 +1,8 @@
 # Changelog
 
+## unreleased
+- rework continuos integration tests and automate release workflow
+
 ## Version 2.0.2
 - Support absence of `xwhat` in valgrind XML output
 

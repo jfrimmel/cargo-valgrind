@@ -1,0 +1,42 @@
+## Automatic release process
+# This workflow is a manually-triggered workflow, which automatically bumps the
+# version and publishes the new crate version to crates.io. This uses an API
+# token stored in the Github secret `CRATES_IO`.
+name: Release crate
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The new crate version to release, must be a non-existing version
+        required: true
+env:
+  CRATES_IO: ${{ secrets.CRATES_IO }}
+  VERSION: ${{ github.event.inputs.version }}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure git user for Bot
+        run: |
+          git config --global user.email 'noreply@github.com'
+          git config --global user.name 'GitHub Actions Release Bot'
+      - name: Create release commit
+        run: |
+          sed -i "s/^version = .*$/version = \"${VERSION}\"/" Cargo.toml
+          cargo check
+          git add Cargo.toml Cargo.lock
+
+          sed -i "s/^## unreleased$/## Version ${VERSION}/" CHANGELOG.md
+          sed -i '3i ## unreleased\n' CHANGELOG.md
+          git add CHANGELOG.md
+
+          git commit -m "Release version \`${VERSION}\`" || :
+      - name: Create tag
+        run: git tag -a "${VERSION}" -m "v${VERSION}"
+      - name: Push changes
+        run: |
+          git push --tags
+          git push
+      - name: Publish to crates.io
+        run: cargo publish --token "${CRATES_IO}"
