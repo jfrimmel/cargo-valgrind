@@ -1,5 +1,5 @@
 name: Minimum Supported Rust Version (MRSV)
-on: pull_request
+on: push
 env:
   CARGO_TERM_COLOR: always
   MSRV: "1.51"
