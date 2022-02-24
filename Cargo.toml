@@ -27,26 +27,26 @@ exclude = [
 default = ["textwrap"]
 
 [dependencies.serde]
-version = "1.0"
+version = "1"
 features = ["derive"]
 
 [dependencies.serde-xml-rs]
-version = "0.3.1"
+version = "0.5"
 default-features = false
 
 [dependencies.colored]
-version = "1.8.0"
+version = "2"
 
 [dependencies.bytesize]
-version = "1.0.0"
+version = "1"
 
 [dependencies.textwrap]
-version = "0.13"
+version = "0.14"
 optional = true
 features = ["terminal_size"]
 
 [dev-dependencies.assert_cmd]
-version = "1.0"
+version = "2"
 
 [dev-dependencies.predicates]
-version = "1.0"
+version = "2"
