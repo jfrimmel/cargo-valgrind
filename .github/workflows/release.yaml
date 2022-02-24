@@ -23,7 +23,7 @@ jobs:
           git config --global user.name 'GitHub Actions Release Bot'
       - name: Create release commit
         run: |
-          sed -i "s/^version = .*$/version = \"${VERSION}\"/" Cargo.toml
+          sed -i "0,/version = /{s/^version = .*$/version = \"${VERSION}\"/}" Cargo.toml
           cargo check
           git add Cargo.toml Cargo.lock
 
