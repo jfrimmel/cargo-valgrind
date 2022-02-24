@@ -1,5 +1,5 @@
-name: Continous Integration
-on: pull_request
+name: Continuos Integration
+on: push
 env:
   CARGO_TERM_COLOR: always
 jobs:

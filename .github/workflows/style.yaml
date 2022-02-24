@@ -1,5 +1,5 @@
 name: Style
-on: pull_request
+on: push
 defaults:
   run:
     shell: bash
@@ -13,30 +13,3 @@ jobs:
       - run: rustup component add rustfmt
       - name: Check formatting
         run: cargo fmt --all -- --check
-
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: rustup update nightly && rustup default nightly
-      - run: rustup component add clippy-preview
-      - name: Run clippy lints
-        id: clippy
-        run: |
-          echo '# Output of `cargo clippy`' > clippy.output
-          echo '```' >> clippy.output
-          # ignore dependency output lines
-          cargo clippy 2>&1 | sed -n '/Checking cargo-valgrind v.*/,$p' | tee -a clippy.output || true
-          echo '```' >> clippy.output
-          echo 'If your PR introduced these issues, please try to address them.' >> clippy.output
-          # the clippy exit code is ignored, therefore the build always works
-          echo "::set-output name=line_count::$(wc -l clippy.output | cut -f 1 -d ' ')"
-      - run: echo '${{ steps.clippy.outputs.line_count }}'
-      - run: wc -l clippy.output | cut -f 1 -d ' '
-      - name: Comment clippy output
-        if: ${{ steps.clippy.outputs.line_count > 6 }}
-        uses: machine-learning-apps/pr-comment@1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          path: clippy.output
