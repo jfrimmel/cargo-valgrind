@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.0.3
 - rework continuos integration tests and automate release workflow
 - Update dependencies
 
