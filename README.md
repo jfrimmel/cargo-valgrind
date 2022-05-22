@@ -61,6 +61,8 @@ Test
 Un-commenting the `unsafe { CString::from_raw(ptr) };` re-takes the memory and frees it correctly.
 `cargo valgrind run` will compile the binary for you and won't detect a leak, since there is no leak anymore.
 
+If you would like to pass flags to valgrind (for example to run an alternate subtool), you can set the `VALGRINDFLAGS` environment variable to a space-delimited list of valid Valgrind options.
+
 _Note_: users of `cargo-valgrind` version 1.x should mind the changed command line.
 Previously there was a `cargo valgrind` subcommand, that replaced the `cargo run` or `cargo test` commands.
 Now the command line is `cargo valgrind <command>`, where `<command>` can be any normal cargo subcommand.

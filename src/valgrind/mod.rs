@@ -5,7 +5,7 @@ pub mod xml;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{ffi::OsStr, process::Stdio};
-use std::{fmt, io::Read};
+use std::{fmt, io::Read, env};
 
 /// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
@@ -28,6 +28,7 @@ pub enum Error {
     /// valgrind.
     MalformedOutput(serde_xml_rs::Error, Vec<u8>),
 }
+
 impl std::error::Error for Error {}
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -54,7 +55,14 @@ where
     let listener = TcpListener::bind(address).map_err(|_| Error::SocketConnection)?;
     let address = listener.local_addr().map_err(|_| Error::SocketConnection)?;
 
+    // additional options to pass to valgrind?
+    let additional_args = match env::var("VALGRINDFLAGS") {
+        Ok(additional) => additional,
+        Err(_) => "".to_string(),
+    };
+    
     let cargo = Command::new("valgrind")
+        .arg(additional_args)
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
         .args(command)
