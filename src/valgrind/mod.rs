@@ -60,7 +60,6 @@ where
 
     // additional options to pass to valgrind?
     if let Ok(additional_args) = env::var("VALGRINDFLAGS") {
-        println!("[{}]", additional_args);
         valgrind.arg(additional_args);
     }
 
