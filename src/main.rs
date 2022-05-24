@@ -64,7 +64,7 @@ fn main() {
             {authors}\n\
             Analyze your Rust binary for memory errors\n\
             \n\
-            This program is a argo subcommand, i.e. it integrates with the \
+            This program is a cargo subcommand, i.e. it integrates with the \
             normal cargo workflow. You specify this subcommand and another \
             \"target\", what valgrind should do. For example: `cargo valgrind \
             run` will do the same thing as `cargo run` (i.e. compile and run \
