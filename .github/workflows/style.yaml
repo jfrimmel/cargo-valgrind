@@ -1,5 +1,9 @@
 name: Style
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 defaults:
   run:
     shell: bash

@@ -1,5 +1,9 @@
 name: Continuos Integration
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 env:
   CARGO_TERM_COLOR: always
 jobs:
