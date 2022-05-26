@@ -55,7 +55,6 @@ where
     let listener = TcpListener::bind(address).map_err(|_| Error::SocketConnection)?;
     let address = listener.local_addr().map_err(|_| Error::SocketConnection)?;
 
-
     let mut valgrind = Command::new("valgrind");
 
     // additional options to pass to valgrind?
