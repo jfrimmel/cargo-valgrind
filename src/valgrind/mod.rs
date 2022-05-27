@@ -4,8 +4,8 @@ pub mod xml;
 
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
+use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
-use std::{fmt, io::Read, env};
 
 /// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
@@ -33,7 +33,7 @@ impl std::error::Error for Error {}
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::ValgrindNotInstalled => write!(f, "valgrind is not installed"),
+            Self::ValgrindNotInstalled => write!(f, "valgrind executable not found"),
             Self::SocketConnection => write!(f, "local TCP I/O error"),
             Self::ProcessFailed => write!(f, "cannot start valgrind process"),
             Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {}", s),
@@ -55,14 +55,14 @@ where
     let listener = TcpListener::bind(address).map_err(|_| Error::SocketConnection)?;
     let address = listener.local_addr().map_err(|_| Error::SocketConnection)?;
 
+    let mut valgrind = Command::new("valgrind");
+
     // additional options to pass to valgrind?
-    let additional_args = match env::var("VALGRINDFLAGS") {
-        Ok(additional) => additional,
-        Err(_) => "".to_string(),
-    };
-    
-    let cargo = Command::new("valgrind")
-        .arg(additional_args)
+    if let Ok(additional_args) = env::var("VALGRINDFLAGS") {
+        valgrind.arg(additional_args);
+    }
+
+    let cargo = valgrind
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
         .args(command)
