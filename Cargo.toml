@@ -26,13 +26,12 @@ exclude = [
 [features]
 default = ["textwrap"]
 
-[dependencies.serde]
-version = "1"
-features = ["derive"]
+[dependencies.strong-xml]
+version = "0.6"
 
-[dependencies.serde-xml-rs]
-version = "0.5"
-default-features = false
+[dependencies.strum]
+version = "0.24"
+features = ["derive"]
 
 [dependencies.colored]
 version = "2"
