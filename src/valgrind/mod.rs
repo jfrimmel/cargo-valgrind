@@ -2,6 +2,7 @@
 
 pub mod xml;
 
+use serde::Deserialize;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{env, fmt, io::Read};
@@ -84,23 +85,26 @@ where
         listener
             .read_to_end(&mut output)
             .map_err(|_| Error::SocketConnection)?;
-        let xml: xml::Output = serde_xml_rs::from_reader(&*output)
-            .map(|output_: xml::Output| {
-                let mut output = output_;
-                if let Some(err) = output.errors {
-                    let new_err: Vec<xml::Error> = err
-                        .into_iter()
-                        .filter(|e| e.resources.bytes > 0 || e.resources.blocks > 0)
-                        .collect();
-                    if new_err.is_empty() {
-                        output.errors = None;
-                    } else {
-                        output.errors = Some(new_err);
-                    }
+        let xml: xml::Output = xml::Output::deserialize(
+            &mut serde_xml_rs::Deserializer::new_from_reader(&*output)
+                .non_contiguous_seq_elements(true),
+        )
+        .map(|output_: xml::Output| {
+            let mut output = output_;
+            if let Some(err) = output.errors {
+                let new_err: Vec<xml::Error> = err
+                    .into_iter()
+                    .filter(|e| e.resources.bytes > 0 || e.resources.blocks > 0)
+                    .collect();
+                if new_err.is_empty() {
+                    output.errors = None;
+                } else {
+                    output.errors = Some(new_err);
                 }
-                output
-            })
-            .map_err(|e| Error::MalformedOutput(e, output))?;
+            }
+            output
+        })
+        .map_err(|e| Error::MalformedOutput(e, output))?;
         Ok(xml)
     });
 
