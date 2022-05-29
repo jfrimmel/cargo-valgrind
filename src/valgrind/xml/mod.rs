@@ -106,7 +106,7 @@ impl Display for Kind {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 pub struct Resources {
     #[serde(rename = "leakedbytes")]
     pub bytes: usize,
@@ -151,15 +151,6 @@ impl Display for Frame {
 
 fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
     deserializer.deserialize_str(HexVisitor)
-}
-
-impl Default for Resources {
-    fn default() -> Self {
-        Resources {
-            bytes: 0,
-            blocks: 0,
-        }
-    }
 }
 
 /// A visitor for parsing a `u64` in the format `0xDEADBEEF`.
