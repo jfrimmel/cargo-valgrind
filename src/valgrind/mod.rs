@@ -92,10 +92,10 @@ where
                         .into_iter()
                         .filter(|e| e.resources.bytes > 0 || e.resources.blocks > 0)
                         .collect();
-                    if new_err.len() > 0 {
-                        output.errors = Some(new_err)
+                    if new_err.is_empty() {
+                        output.errors = None;
                     } else {
-                        output.errors = None
+                        output.errors = Some(new_err);
                     }
                 }
                 output

@@ -73,7 +73,7 @@ pub fn replace_hook() {
                 String::from_utf8_lossy(content)
             );
         } else {
-            old_hook(panic)
+            old_hook(panic);
         }
     }));
 }
