@@ -60,7 +60,7 @@ where
 
     // additional options to pass to valgrind?
     if let Ok(additional_args) = env::var("VALGRINDFLAGS") {
-        valgrind.arg(additional_args);
+        valgrind.args(additional_args.split(" "));
     }
 
     let cargo = valgrind
