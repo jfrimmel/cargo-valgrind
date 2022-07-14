@@ -30,7 +30,7 @@ fn main() {
 }
 ```
 The memory of the variable `string` will never be freed.
-If you run `cargo valgrind run` it your shell, it detects the leak:
+If you run `cargo valgrind run` in your shell, it detects the leak:
 ```bash
 $ cargo valgrind run
     Finished dev [unoptimized + debuginfo] target(s) in 0.01s
