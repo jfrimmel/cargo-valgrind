@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.1.0
 - Support passing additional flags to valgrind via the `VALGRINDFLAGS` env var
 - Accept more Valgrind XML output (leading to fewer panics)
 - Update dependencies including a fix for a vulnerability in `regex` (which didn't affect this crate, though)
