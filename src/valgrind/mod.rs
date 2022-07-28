@@ -2,11 +2,11 @@
 
 pub mod xml;
 
-use serde::Deserialize;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
+use strong_xml::{XmlError, XmlRead};
 
 /// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub enum Error {
     ///
     /// This variant contains the inner deserialization error and the output of
     /// valgrind.
-    MalformedOutput(serde_xml_rs::Error, Vec<u8>),
+    MalformedOutput(XmlError, Vec<u8>),
 }
 
 impl std::error::Error for Error {}
@@ -85,26 +85,12 @@ where
         listener
             .read_to_end(&mut output)
             .map_err(|_| Error::SocketConnection)?;
-        let xml: xml::Output = xml::Output::deserialize(
-            &mut serde_xml_rs::Deserializer::new_from_reader(&*output)
-                .non_contiguous_seq_elements(true),
-        )
-        .map(|output_: xml::Output| {
-            let mut output = output_;
-            if let Some(err) = output.errors {
-                let new_err: Vec<xml::Error> = err
-                    .into_iter()
-                    .filter(|e| e.resources.bytes > 0 || e.resources.blocks > 0)
-                    .collect();
-                if new_err.is_empty() {
-                    output.errors = None;
-                } else {
-                    output.errors = Some(new_err);
-                }
-            }
-            output
-        })
-        .map_err(|e| Error::MalformedOutput(e, output))?;
+        let output_str = match std::str::from_utf8(&output) {
+            Ok(s) => s,
+            Err(e) => return Err(Error::MalformedOutput(XmlError::Utf8(e), output))?,
+        };
+        let xml: xml::Output =
+            xml::Output::from_str(output_str).map_err(|e| Error::MalformedOutput(e, output))?;
         Ok(xml)
     });
 

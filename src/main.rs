@@ -24,24 +24,20 @@ mod valgrind;
 use colored::Colorize as _;
 use std::env;
 use std::process;
+use valgrind::xml;
 
 /// Nicely format the errors in the valgrind output, if there are any.
-fn display_error(errors: &[valgrind::xml::Error]) {
+fn display_error(errors: &[xml::Error]) {
     // format the output in a helpful manner
     for error in errors {
-        eprintln!(
-            "{:>12} leaked {} in {} block{}",
-            "Error".red().bold(),
-            bytesize::to_string(error.resources.bytes as _, true),
-            error.resources.blocks,
-            if error.resources.blocks == 1 { "" } else { "s" }
-        );
-        let mut info = Some("Info".cyan().bold());
-        error
-            .stack_trace
-            .frames
-            .iter()
-            .for_each(|frame| eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame));
+        eprintln!("{:>12} {}", "Error".red().bold(), error.description);
+        display_backtrace(&error.stack_trace);
+        for extra in &error.extra {
+            match extra {
+                xml::ErrorExtra::AuxWhat(s) => eprintln!("{:>12} {}", "Info".cyan().bold(), s),
+                xml::ErrorExtra::StackTrace(stack) => display_backtrace(stack),
+            }
+        }
     }
 
     let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
@@ -50,6 +46,14 @@ fn display_error(errors: &[valgrind::xml::Error]) {
         "Summary".red().bold(),
         bytesize::to_string(total as _, true)
     );
+}
+
+/// Display a backtrace provided by valgrind.
+fn display_backtrace(backtrace: &xml::Stack) {
+    backtrace
+        .frames
+        .iter()
+        .for_each(|frame| eprintln!("{:>12} at {}", "", frame));
 }
 
 fn main() {
@@ -90,10 +94,7 @@ fn main() {
         let command = env::args_os().skip(1);
 
         let exit_code = match valgrind::execute(command) {
-            Ok(valgrind::xml::Output {
-                errors: Some(errors),
-                ..
-            }) => {
+            Ok(xml::Output { errors, .. }) if !errors.is_empty() => {
                 display_error(&errors);
                 127
             }
