@@ -141,7 +141,7 @@ impl Display for Frame {
             f.write_str(" (")?;
             f.write_str(file)?;
             if let Some(line) = self.line {
-                write!(f, ":{}", line)?;
+                write!(f, ":{line}")?;
             }
             f.write_str(")")?;
         }
@@ -168,6 +168,6 @@ impl<'de> Visitor<'de> for HexVisitor {
             .strip_prefix("0x")
             .ok_or_else(|| E::custom("'0x' prefix missing"))?;
         Self::Value::from_str_radix(value, 16)
-            .map_err(|_| E::custom(format!("invalid hex number '{}'", value)))
+            .map_err(|_| E::custom(format!("invalid hex number '{value}'")))
     }
 }

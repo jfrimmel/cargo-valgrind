@@ -7,6 +7,7 @@
 //! addition information is printed (e.g. for [`Error::MalformedOutput`]).
 //!
 //! [`Error::MalformedOutput`]: crate::valgrind::Error::MalformedOutput
+#![allow(clippy::module_name_repetitions)]
 
 use crate::valgrind::Error;
 use std::panic;
@@ -53,7 +54,7 @@ pub fn replace_hook() {
             textwrap::Options::with_termwidth(),
         )
         .join("\n");
-        eprintln!("{}", text);
+        eprintln!("{text}");
 
         eprintln!(
             "{}: version {}",
@@ -64,10 +65,7 @@ pub fn replace_hook() {
         // intentionally not wrapped using `textwrap`, since own formatting
         // might be applied.
         if let Some(Error::MalformedOutput(e, content)) = panic.payload().downcast_ref() {
-            eprintln!(
-                "XML format mismatch between `valgrind` and `cargo valgrind`: {}",
-                e
-            );
+            eprintln!("XML format mismatch between `valgrind` and `cargo valgrind`: {e}");
             eprintln!(
                 "XML output of valgrind:\n```xml\n{}```",
                 String::from_utf8_lossy(content)
