@@ -42,8 +42,8 @@ pub fn driver() -> io::Result<bool> {
         .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "could not determine host"))?;
 
     /* convert to runner env variable */
-    let host = host.replace('-', "_").replace('.', "_").to_uppercase();
-    let runner = format!("CARGO_TARGET_{}_RUNNER", host);
+    let host = host.replace(['-', '.'], "_").to_uppercase();
+    let runner = format!("CARGO_TARGET_{host}_RUNNER");
 
     /* cargo run with a custom runner */
     let cargo_valgrind = env::args_os()

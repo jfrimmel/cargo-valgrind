@@ -119,7 +119,7 @@ fn main() {
             textwrap::Options::with_termwidth(),
         )
         .join("\n");
-        println!("{}", text);
+        println!("{text}");
     } else if is_cargo_subcommand() {
         if !driver::driver().expect("Could not execute subcommand") {
             process::exit(200);

@@ -37,8 +37,8 @@ impl fmt::Display for Error {
             Self::ValgrindNotInstalled => write!(f, "valgrind executable not found"),
             Self::SocketConnection => write!(f, "local TCP I/O error"),
             Self::ProcessFailed => write!(f, "cannot start valgrind process"),
-            Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {}", s),
-            Self::MalformedOutput(e, _) => write!(f, "unexpected valgrind output: {}", e),
+            Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {s}"),
+            Self::MalformedOutput(e, _) => write!(f, "unexpected valgrind output: {e}"),
         }
     }
 }

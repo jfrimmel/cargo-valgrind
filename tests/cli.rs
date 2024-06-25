@@ -20,7 +20,7 @@ fn leak_detected() {
 #[test]
 fn examples_are_runnable() {
     cargo_valgrind()
-        .args(&["run", "--example", "no-leak"])
+        .args(["run", "--example", "no-leak"])
         .args(TARGET_CRATE)
         .assert()
         .success()
