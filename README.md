@@ -2,7 +2,6 @@
 > A cargo subcommand, that runs valgrind and collects its output in a helpful manner.
 
 [![Latest version](https://img.shields.io/crates/v/cargo-valgrind.svg)](https://crates.io/crates/cargo-valgrind)
-[![Documentation](https://docs.rs/cargo-valgrind/badge.svg)](https://docs.rs/cargo-valgrind)
 
 This command extends cargo with the capability to directly run `valgrind` on any crate executable.
 The output of valgrind is then used to mark the binary as pass/fail.
