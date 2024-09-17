@@ -21,3 +21,14 @@ fn issue74() {
             "Summary Leaked 0 B total (1 other errors)",
         ));
 }
+
+#[test]
+fn issue70() {
+    cargo_valgrind()
+        .arg("run")
+        .args(TARGET_CRATE)
+        .arg("--bin=issue-70")
+        .env("RUST_LOG", "debug")
+        .assert()
+        .stdout(predicates::str::contains("RUST_LOG=debug"));
+}
