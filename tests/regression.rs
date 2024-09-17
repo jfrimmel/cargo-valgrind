@@ -15,5 +15,9 @@ fn issue74() {
         .args(TARGET_CRATE)
         .arg("--bin=issue-74")
         .assert()
-        .success();
+        .failure()
+        .stderr(predicates::str::contains("Error Invalid read of size 4"))
+        .stderr(predicates::str::contains(
+            "Summary Leaked 0 B total (1 other errors)",
+        ));
 }
