@@ -26,16 +26,14 @@ use std::env;
 use std::process;
 
 /// Nicely format the errors in the valgrind output, if there are any.
-fn display_error(errors: &[valgrind::xml::Error]) {
+fn display_errors(errors: &[valgrind::xml::Error]) {
     // format the output in a helpful manner
     for error in errors {
-        eprintln!(
-            "{:>12} leaked {} in {} block{}",
-            "Error".red().bold(),
-            bytesize::to_string(error.resources.bytes as _, true),
-            error.resources.blocks,
-            if error.resources.blocks == 1 { "" } else { "s" }
-        );
+        if error.kind.is_leak() {
+            display_leak(error);
+        } else {
+            display_generic_error(error);
+        }
         let mut info = Some("Info".cyan().bold());
         error.stack_trace[0]
             .frames
@@ -48,6 +46,30 @@ fn display_error(errors: &[valgrind::xml::Error]) {
         "{:>12} Leaked {} total",
         "Summary".red().bold(),
         bytesize::to_string(total as _, true)
+    );
+}
+
+/// Nicely format a single memory leak error.
+fn display_leak(error: &valgrind::xml::Error) {
+    eprintln!(
+        "{:>12} leaked {} in {} block{}",
+        "Error".red().bold(),
+        bytesize::to_string(error.resources.bytes as _, true),
+        error.resources.blocks,
+        if error.resources.blocks == 1 { "" } else { "s" }
+    );
+}
+
+/// Nicely format a non-memory-leak error.
+fn display_generic_error(error: &valgrind::xml::Error) {
+    eprintln!(
+        "{:>12} {}",
+        "Error".red().bold(),
+        error
+            .main_info
+            .as_ref()
+            .map(String::as_str)
+            .unwrap_or("unknown"),
     );
 }
 
@@ -93,7 +115,7 @@ fn main() {
                 errors: Some(errors),
                 ..
             }) => {
-                display_error(&errors);
+                display_errors(&errors);
                 127
             }
             Ok(_) => 0,

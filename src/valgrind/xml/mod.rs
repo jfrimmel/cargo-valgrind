@@ -59,6 +59,9 @@ pub struct Error {
     #[serde(rename = "xwhat")]
     pub resources: Resources,
     #[serde(default)]
+    #[serde(rename = "what")]
+    pub main_info: Option<String>,
+    #[serde(default)]
     #[serde(rename = "auxwhat")]
     pub auxiliary_info: Vec<String>,
     #[serde(rename = "stack")]
