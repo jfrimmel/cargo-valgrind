@@ -12,6 +12,6 @@ jobs:
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: rustup update $MSRV && rustup default $MSRV
       - run: cargo check
