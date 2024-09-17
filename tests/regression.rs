@@ -8,8 +8,13 @@ fn cargo_valgrind() -> Command {
 
 const TARGET_CRATE: &[&str] = &["--manifest-path", "tests/corpus/Cargo.toml"];
 
+/// Issues: [#55], [#68], [#74].
+///
+/// [#55]: https://github.com/jfrimmel/cargo-valgrind/issues/55
+/// [#68]: https://github.com/jfrimmel/cargo-valgrind/issues/68
+/// [#74]: https://github.com/jfrimmel/cargo-valgrind/issues/74
 #[test]
-fn issue74() {
+fn duplicate_stack_fields() {
     cargo_valgrind()
         .arg("run")
         .args(TARGET_CRATE)
@@ -22,8 +27,11 @@ fn issue74() {
         ));
 }
 
+/// Issue: [#70]
+///
+/// [#70]: https://github.com/jfrimmel/cargo-valgrind/issues/70
 #[test]
-fn issue70() {
+fn environment_variables_are_passed_to_program_under_test() {
     cargo_valgrind()
         .arg("run")
         .args(TARGET_CRATE)
