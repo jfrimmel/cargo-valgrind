@@ -43,9 +43,10 @@ fn display_errors(errors: &[valgrind::xml::Error]) {
 
     let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
     eprintln!(
-        "{:>12} Leaked {} total",
+        "{:>12} Leaked {} total ({} other errors)",
         "Summary".red().bold(),
-        bytesize::to_string(total as _, true)
+        bytesize::to_string(total as _, true),
+        errors.iter().filter(|e| !e.kind.is_leak()).count()
     );
 }
 
