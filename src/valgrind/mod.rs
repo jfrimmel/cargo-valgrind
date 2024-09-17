@@ -94,7 +94,9 @@ where
             if let Some(err) = output.errors {
                 let new_err: Vec<xml::Error> = err
                     .into_iter()
-                    .filter(|e| e.resources.bytes > 0 || e.resources.blocks > 0)
+                    .filter(|e| {
+                        !e.kind.is_leak() || e.resources.bytes > 0 || e.resources.blocks > 0
+                    })
                     .collect();
                 if new_err.is_empty() {
                     output.errors = None;

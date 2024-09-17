@@ -58,8 +58,14 @@ pub struct Error {
     #[serde(default)]
     #[serde(rename = "xwhat")]
     pub resources: Resources,
+    #[serde(default)]
+    #[serde(rename = "what")]
+    pub main_info: Option<String>,
+    #[serde(default)]
+    #[serde(rename = "auxwhat")]
+    pub auxiliary_info: Vec<String>,
     #[serde(rename = "stack")]
-    pub stack_trace: Stack,
+    pub stack_trace: Vec<Stack>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
@@ -83,6 +89,28 @@ pub enum Kind {
     UninitValue,
     SyscallParam,
     ClientCheck,
+}
+impl Kind {
+    /// Query, if the current error kind is a memory leak
+    pub(crate) fn is_leak(&self) -> bool {
+        match self {
+            Kind::LeakDefinitelyLost
+            | Kind::LeakStillReachable
+            | Kind::LeakIndirectlyLost
+            | Kind::LeakPossiblyLost => true,
+            Kind::InvalidFree
+            | Kind::MismatchedFree
+            | Kind::InvalidRead
+            | Kind::InvalidWrite
+            | Kind::InvalidJump
+            | Kind::Overlap
+            | Kind::InvalidMemPool
+            | Kind::UninitCondition
+            | Kind::UninitValue
+            | Kind::SyscallParam
+            | Kind::ClientCheck => false,
+        }
+    }
 }
 impl Display for Kind {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
