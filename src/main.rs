@@ -34,11 +34,6 @@ fn display_errors(errors: &[valgrind::xml::Error]) {
         } else {
             display_generic_error(error);
         }
-        let mut info = Some("Info".cyan().bold());
-        error.stack_trace[0]
-            .frames
-            .iter()
-            .for_each(|frame| eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame));
     }
 
     let total: usize = errors.iter().map(|error| error.resources.bytes).sum();
@@ -59,6 +54,9 @@ fn display_leak(error: &valgrind::xml::Error) {
         error.resources.blocks,
         if error.resources.blocks == 1 { "" } else { "s" }
     );
+
+    let stack = &error.stack_trace[0]; // always available
+    display_stack_trace("stack trace (user code at the bottom)", stack);
 }
 
 /// Nicely format a non-memory-leak error.
@@ -72,6 +70,29 @@ fn display_generic_error(error: &valgrind::xml::Error) {
             .map(String::as_str)
             .unwrap_or("unknown"),
     );
+
+    let stack = &error.stack_trace[0]; // always available
+    display_stack_trace("main stack trace (user code at the bottom)", stack);
+    error
+        .stack_trace
+        .iter()
+        .skip(1)
+        .enumerate()
+        .map(|(index, stack)| (error.auxiliary_info.get(index), stack))
+        .for_each(|(msg, stack)| {
+            display_stack_trace(
+                msg.map_or_else(|| "additional stack trace", String::as_str),
+                stack,
+            )
+        })
+}
+
+fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
+    eprintln!("{:>12} {}", "Info".cyan().bold(), msg);
+    stack
+        .frames
+        .iter()
+        .for_each(|frame| eprintln!("             at {}", frame));
 }
 
 fn main() {
