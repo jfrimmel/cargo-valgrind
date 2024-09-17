@@ -27,6 +27,22 @@ fn duplicate_stack_fields() {
         ));
 }
 
+/// Issue: [#13]
+///
+/// [#13]: https://github.com/jfrimmel/cargo-valgrind/issues/13
+#[test]
+fn stack_overflow_in_program_under_test() {
+    cargo_valgrind()
+        .arg("run")
+        .args(TARGET_CRATE)
+        .arg("--bin=issue-13")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains(
+            "looks like the program overflowed its stack",
+        ));
+}
+
 /// Issue: [#20]
 ///
 /// [#20]: https://github.com/jfrimmel/cargo-valgrind/issues/20
