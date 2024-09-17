@@ -1,9 +1,6 @@
 name: Minimum Supported Rust Version (MRSV)
 on:
   push:
-    branches:
-      - master
-  pull_request:
 env:
   CARGO_TERM_COLOR: always
   MSRV: "1.51"
