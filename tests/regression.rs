@@ -27,6 +27,24 @@ fn duplicate_stack_fields() {
         ));
 }
 
+/// Issue: [#20]
+///
+/// [#20]: https://github.com/jfrimmel/cargo-valgrind/issues/20
+#[test]
+fn invalid_free() {
+    cargo_valgrind()
+        .arg("run")
+        .args(TARGET_CRATE)
+        .arg("--bin=issue-20")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("Error Invalid free"))
+        .stderr(predicates::str::contains(
+            "is 0 bytes inside a block of size 8 free'd",
+        ))
+        .stderr(predicates::str::contains("Info Block was alloc'd at"));
+}
+
 /// Issue: [#70]
 ///
 /// [#70]: https://github.com/jfrimmel/cargo-valgrind/issues/70
