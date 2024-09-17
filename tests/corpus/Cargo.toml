@@ -6,3 +6,11 @@ publish = false
 [[bin]]
 name = "issue-74"
 path = "issue-74.rs"
+
+[[bin]]
+name = "issue-20"
+path = "issue-20.rs"
+
+[[bin]]
+name = "issue-70"
+path = "issue-70.rs"
