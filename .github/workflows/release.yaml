@@ -21,6 +21,9 @@ jobs:
         run: |
           git config --global user.email 'noreply@github.com'
           git config --global user.name 'GitHub Actions Release Bot'
+          # install SSH-key from GitHub secrets
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
       - name: Create release commit
         run: |
           sed -i "0,/version = /{s/^version = .*$/version = \"${VERSION}\"/}" Cargo.toml
