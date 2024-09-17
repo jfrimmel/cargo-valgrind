@@ -59,7 +59,7 @@ pub struct Error {
     #[serde(rename = "xwhat")]
     pub resources: Resources,
     #[serde(rename = "stack")]
-    pub stack_trace: Stack,
+    pub stack_trace: Vec<Stack>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]

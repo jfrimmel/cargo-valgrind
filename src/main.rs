@@ -37,8 +37,7 @@ fn display_error(errors: &[valgrind::xml::Error]) {
             if error.resources.blocks == 1 { "" } else { "s" }
         );
         let mut info = Some("Info".cyan().bold());
-        error
-            .stack_trace
+        error.stack_trace[0]
             .frames
             .iter()
             .for_each(|frame| eprintln!("{:>12} at {}", info.take().unwrap_or_default(), frame));

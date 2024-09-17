@@ -22,7 +22,7 @@ fn sample_output() {
         }
     );
     assert_eq!(
-        &errors[0].stack_trace.frames[..2],
+        &errors[0].stack_trace[0].frames[..2],
         &[
             Frame {
                 instruction_pointer: 0x483_AD7B,
