@@ -1,0 +1,8 @@
+[package]
+name = "corpus"
+version = "0.0.0"
+publish = false
+
+[[bin]]
+name = "issue-74"
+path = "issue-74.rs"
