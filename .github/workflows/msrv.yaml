@@ -1,9 +1,6 @@
 name: Minimum Supported Rust Version (MRSV)
 on:
   push:
-    branches:
-      - master
-  pull_request:
 env:
   CARGO_TERM_COLOR: always
   MSRV: "1.51"
@@ -12,6 +9,6 @@ jobs:
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: rustup update $MSRV && rustup default $MSRV
       - run: cargo check
