@@ -34,6 +34,8 @@ jobs:
           git commit -m "Release version \`${VERSION}\`" || :
       - name: Create tag
         run: git tag -a "${VERSION}" -m "v${VERSION}"
+      - name: Show commit
+        run: git show
       - name: Push changes
         run: |
           git push --tags
