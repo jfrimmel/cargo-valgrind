@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+- Ensure, that consistent tag names are used ([#89](https://github.com/jfrimmel/cargo-valgrind/pull/89)).
+    This will cause future releases to automatically include the pre-built artifacts thanks to running the deploy workflow when a new tag is pushed.
 
 ## Version 2.2.0
 - Don't crash on valgrind output with multiple stack traces (e.g. an invalid read as in [#80](https://github.com/jfrimmel/cargo-valgrind/pull/80))
