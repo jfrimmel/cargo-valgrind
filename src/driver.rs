@@ -20,7 +20,10 @@ pub fn driver() -> io::Result<bool> {
     let cargo = env::var_os("CARGO").expect("CARGO environment variable is not set");
 
     /* get the output of `cargo version -v` */
-    let rustc_info = Command::new(&cargo).args(&["version", "-v"]).output()?.stdout;
+    let rustc_info = Command::new(&cargo)
+        .args(&["version", "-v"])
+        .output()?
+        .stdout;
 
     /* get the host information (all after the "host: ..." line) */
     let host = rustc_info
