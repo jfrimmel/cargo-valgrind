@@ -32,6 +32,7 @@ const PANIC_HEADER: &str = "
 ///
 /// This is helpful for printing debug information to the panic message.
 #[macro_export]
+#[allow(clippy::module_name_repetitions)] // necessary for exported macro
 macro_rules! panic_with {
     ($e:expr) => {
         std::panic::panic_any($e)

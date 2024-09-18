@@ -64,11 +64,7 @@ fn display_generic_error(error: &valgrind::xml::Error) {
     eprintln!(
         "{:>12} {}",
         "Error".red().bold(),
-        error
-            .main_info
-            .as_ref()
-            .map(String::as_str)
-            .unwrap_or("unknown"),
+        error.main_info.as_ref().map_or("unknown", String::as_str)
     );
 
     let stack = &error.stack_trace[0]; // always available
@@ -83,10 +79,11 @@ fn display_generic_error(error: &valgrind::xml::Error) {
             display_stack_trace(
                 msg.map_or_else(|| "additional stack trace", String::as_str),
                 stack,
-            )
-        })
+            );
+        });
 }
 
+/// Write out the full stack trace (indented to match other messages).
 fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
     eprintln!("{:>12} {}", "Info".cyan().bold(), msg);
     stack

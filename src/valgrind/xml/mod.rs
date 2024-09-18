@@ -92,23 +92,23 @@ pub enum Kind {
 }
 impl Kind {
     /// Query, if the current error kind is a memory leak
-    pub(crate) fn is_leak(&self) -> bool {
+    pub(crate) const fn is_leak(self) -> bool {
         match self {
-            Kind::LeakDefinitelyLost
-            | Kind::LeakStillReachable
-            | Kind::LeakIndirectlyLost
-            | Kind::LeakPossiblyLost => true,
-            Kind::InvalidFree
-            | Kind::MismatchedFree
-            | Kind::InvalidRead
-            | Kind::InvalidWrite
-            | Kind::InvalidJump
-            | Kind::Overlap
-            | Kind::InvalidMemPool
-            | Kind::UninitCondition
-            | Kind::UninitValue
-            | Kind::SyscallParam
-            | Kind::ClientCheck => false,
+            Self::LeakDefinitelyLost
+            | Self::LeakStillReachable
+            | Self::LeakIndirectlyLost
+            | Self::LeakPossiblyLost => true,
+            Self::InvalidFree
+            | Self::MismatchedFree
+            | Self::InvalidRead
+            | Self::InvalidWrite
+            | Self::InvalidJump
+            | Self::Overlap
+            | Self::InvalidMemPool
+            | Self::UninitCondition
+            | Self::UninitValue
+            | Self::SyscallParam
+            | Self::ClientCheck => false,
         }
     }
 }
