@@ -14,3 +14,12 @@ jobs:
       - run: rustup component add rustfmt
       - name: Check formatting
         run: cargo fmt --all -- --check
+  # Check for code issues
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - run: rustup component add clippy
+      - name: Run linter
+        run: cargo clippy --color=always -- -D warnings

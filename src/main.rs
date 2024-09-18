@@ -64,11 +64,7 @@ fn display_generic_error(error: &valgrind::xml::Error) {
     eprintln!(
         "{:>12} {}",
         "Error".red().bold(),
-        error
-            .main_info
-            .as_ref()
-            .map(String::as_str)
-            .unwrap_or("unknown"),
+        error.main_info.as_ref().map_or("unknown", String::as_str)
     );
 
     let stack = &error.stack_trace[0]; // always available
@@ -83,10 +79,11 @@ fn display_generic_error(error: &valgrind::xml::Error) {
             display_stack_trace(
                 msg.map_or_else(|| "additional stack trace", String::as_str),
                 stack,
-            )
-        })
+            );
+        });
 }
 
+/// Write out the full stack trace (indented to match other messages).
 fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
     eprintln!("{:>12} {}", "Info".cyan().bold(), msg);
     stack
@@ -98,7 +95,7 @@ fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
 fn main() {
     panic::replace_hook();
 
-    let number_of_arguments = || env::args_os().skip(0).count();
+    let number_of_arguments = || env::args_os().skip(1).count();
     let help_requested = || env::args_os().any(|arg| arg == "--help" || arg == "-h");
     let is_cargo_subcommand = || env::args_os().nth(1).map_or(false, |arg| arg == "valgrind");
     if number_of_arguments() == 0 || help_requested() {
