@@ -39,7 +39,7 @@ pub fn driver() -> io::Result<bool> {
         .collect();
 
     /* convert to runner env variable */
-    let host = host.replace(&['-', '.'], "_").to_uppercase();
+    let host = host.replace('-', "_").replace('.', "_").to_uppercase();
     let runner = format!("CARGO_TARGET_{}_RUNNER", host);
 
     /* cargo run with a custom runner */
