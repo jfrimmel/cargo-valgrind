@@ -29,9 +29,9 @@ fn ex4() {
   let (a, b)
       = split_at_mut(r, 4);
 
-  println!("a={a:?} (should be [1, 2, 3, 4]");
+  println!("a={:?} (should be [1, 2, 3, 4]", a);
   drop(a);
-  println!("b={b:?} (should be [5, 6])");
+  println!("b={:?} (should be [5, 6])", b);
   // assert_eq!(a, &mut[1, 2, 3, 4]);
   // assert_eq!(b, &mut[5, 6]);
 }
