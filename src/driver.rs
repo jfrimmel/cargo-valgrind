@@ -3,6 +3,7 @@
 use std::env;
 use std::ffi::OsString;
 use std::io;
+use std::path::Path;
 use std::process::Command;
 
 /// The prefix line for the target host output.
@@ -18,19 +19,23 @@ const HOST_PREFIX: &[u8] = b"host: ";
 /// executed.
 pub fn driver() -> io::Result<bool> {
     let cargo = env::var_os("CARGO").expect("CARGO environment variable is not set");
+    let rustc = Path::new(&cargo).with_file_name("rustc");
 
     /* get the output of `cargo version -v` */
-    let rustc_info = Command::new(&cargo)
+    let cargo_info = Command::new(&cargo)
         .args(&["version", "-v"])
         .output()?
         .stdout;
+    /* old cargo versions don't include the host-field, so fall back to rustc */
+    let rustc_info = Command::new(rustc).arg("-vV").output()?.stdout;
+    let info = [cargo_info, rustc_info].concat();
 
     /* get the host information (all after the "host: ..." line) */
-    let host = rustc_info
+    let host = info
         .windows(HOST_PREFIX.len())
         .position(|window| window == HOST_PREFIX)
-        .expect("Host information not present in `cargo version -v`");
-    let host: String = rustc_info
+        .expect("Host information not present in `cargo version -v` or `rustc -vV");
+    let host: String = info
         .into_iter()
         .skip(host)
         .skip(HOST_PREFIX.len())
