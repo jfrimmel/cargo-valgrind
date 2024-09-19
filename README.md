@@ -87,6 +87,8 @@ You'll also need to have `cargo` installed and in the `PATH`, but since this is 
 ## Install the binary
 ### Use pre-built binaries
 Head over to the [latest release] and download the artifact for your platform.
+The binary has to be extracted into the `.cargo`-directory, typically under `$HOME/.cargo`.
+Note, that it is not possible to directly run the program itself, as it must be invoked via `cargo valgrind`, so it must be located in a directory, `cargo` searches its subcommands in.
 
 [latest release]: https://github.com/jfrimmel/cargo-valgrind/releases/latest
 
