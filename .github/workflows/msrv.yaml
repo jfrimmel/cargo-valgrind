@@ -1,17 +1,17 @@
 name: Minimum Supported Rust Version (MRSV)
 on:
   push:
-    branches:
-      - master
-  pull_request:
 env:
   CARGO_TERM_COLOR: always
   MSRV: "1.51"
 jobs:
-  # build but don't test the crate with the Minimum Supported Rust Version
+  # Build and test the tool with the Minimum Supported Rust Version
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install valgrind
+        run: sudo apt install valgrind
       - run: rustup update $MSRV && rustup default $MSRV
-      - run: cargo check
+      - name: Run tests
+        run: cargo test

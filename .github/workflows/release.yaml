@@ -16,7 +16,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
       - name: Configure git user for Bot
         run: |
           git config --global user.email 'noreply@github.com'
@@ -34,6 +36,8 @@ jobs:
           git commit -m "Release version \`${VERSION}\`" || :
       - name: Create tag
         run: git tag -a "${VERSION}" -m "v${VERSION}"
+      - name: Show commit
+        run: git show
       - name: Push changes
         run: |
           git push --tags

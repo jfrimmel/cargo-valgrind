@@ -1,6 +1,16 @@
 # Changelog
 
 ## unreleased
+- Add more helpful error message if the program under test overflows its stack ([#93](https://github.com/jfrimmel/cargo-valgrind/pull/93))
+
+## Version 2.2.1
+- Ensure, that consistent tag names are used ([#89](https://github.com/jfrimmel/cargo-valgrind/pull/89)).
+    This will cause future releases to automatically include the pre-built artifacts thanks to running the deploy workflow when a new tag is pushed.
+
+## Version 2.2.0
+- Don't crash on valgrind output with multiple stack traces (e.g. an invalid read as in [#80](https://github.com/jfrimmel/cargo-valgrind/pull/80))
+- Display auxiliary information and stack traces if available ([#81](https://github.com/jfrimmel/cargo-valgrind/pull/81))
+- Update dependencies and CI configuration to fix vulnerabilities (`atty` and `actions/checkout`)
 
 ## Version 2.1.0
 - Support passing additional flags to valgrind via the `VALGRINDFLAGS` env var

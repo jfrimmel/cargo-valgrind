@@ -7,7 +7,18 @@ use std::path::Path;
 use std::process::Command;
 
 /// The prefix line for the target host output.
-const HOST_PREFIX: &[u8] = b"host: ";
+const HOST_PREFIX: &str = "host: ";
+
+/// Search for [`HOST_PREFIX`] inside the command output and extract its value.
+fn search_for_host(command: &mut Command) -> Option<String> {
+    let output = command.output().ok()?.stdout;
+    let output = String::from_utf8(output).ok()?;
+
+    output
+        .lines()
+        .find(|line| line.starts_with(HOST_PREFIX))
+        .map(|host_line| host_line.trim_start_matches(HOST_PREFIX).to_string())
+}
 
 /// Act as a driver for `cargo run`/`cargo test`, but with special runner.
 ///
@@ -18,25 +29,17 @@ const HOST_PREFIX: &[u8] = b"host: ";
 /// This function returns an I/O error, if a subprocess could not be spawned or
 /// executed.
 pub fn driver() -> io::Result<bool> {
-    /* get path of `rustc` */
     let cargo = env::var_os("CARGO").expect("CARGO environment variable is not set");
     let rustc = Path::new(&cargo).with_file_name("rustc");
 
-    /* get the output of `rustc -vV` */
-    let rustc_info = Command::new(rustc).arg("-vV").output()?.stdout;
-
-    /* get the host information (all after the "host: ..." line) */
-    let host = rustc_info
-        .windows(HOST_PREFIX.len())
-        .position(|window| window == HOST_PREFIX)
-        .expect("Host information not present in `rustc -vV`");
-    let host: String = rustc_info
-        .into_iter()
-        .skip(host)
-        .skip(HOST_PREFIX.len())
-        .take_while(|&x| x != b'\n')
-        .map(char::from)
-        .collect();
+    // Search for the host currently running to be able to override the runner.
+    // The host field is extracted from `cargo version -v` if possible, since
+    // this relies entirely on the used `cargo` binary. Older versions of cargo
+    // don't provide the host in that output, though, so there is a fallback to
+    // `rustc -vV` in that case.
+    let host = search_for_host(Command::new(&cargo).arg("version").arg("-v"))
+        .or_else(|| search_for_host(Command::new(rustc).arg("rustc").arg("-vV")))
+        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "could not determine host"))?;
 
     /* convert to runner env variable */
     let host = host.replace(['-', '.'], "_").to_uppercase();
@@ -46,6 +49,7 @@ pub fn driver() -> io::Result<bool> {
     let cargo_valgrind = env::args_os()
         .next()
         .unwrap_or_else(|| OsString::from("cargo-valgrind"));
+
     Ok(Command::new(cargo)
         .args(env::args_os().skip(2))
         .envs(env::vars_os())

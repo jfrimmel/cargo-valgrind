@@ -1,0 +1,20 @@
+[package]
+name = "corpus"
+version = "0.0.0"
+publish = false
+
+[[bin]]
+name = "issue-13"
+path = "issue-13.rs"
+
+[[bin]]
+name = "issue-74"
+path = "issue-74.rs"
+
+[[bin]]
+name = "issue-20"
+path = "issue-20.rs"
+
+[[bin]]
+name = "issue-70"
+path = "issue-70.rs"
