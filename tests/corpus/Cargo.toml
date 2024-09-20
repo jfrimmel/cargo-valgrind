@@ -16,5 +16,9 @@ name = "issue-20"
 path = "issue-20.rs"
 
 [[bin]]
+name = "issue-36"
+path = "issue-36.rs"
+
+[[bin]]
 name = "issue-70"
 path = "issue-70.rs"

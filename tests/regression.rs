@@ -74,3 +74,52 @@ fn environment_variables_are_passed_to_program_under_test() {
         .assert()
         .stdout(predicates::str::contains("RUST_LOG=debug"));
 }
+
+/// Issue: [#36]: make sure, that an interrupted `cargo valgrind` invocation
+/// kills the running program, so that it does not run in the background.
+///
+/// [#36]: https://github.com/jfrimmel/cargo-valgrind/issues/36
+#[test]
+fn interrupted_program_execution() {
+    use assert_cmd::cargo::CommandCargoExt;
+    use std::{io::Read, process, thread, time::Duration};
+
+    // pre-build the crate to run, so that it does not need to be built later on
+    cargo_valgrind()
+        .arg("build")
+        .args(TARGET_CRATE)
+        .arg("--bin=issue-36");
+
+    // We need the raw `std::process::Command` in order to send the kill signal
+    // to it. Therefore this does not use the `cargo_valgrind()` helper as all
+    // other tests.
+    let mut cargo_valgrind = process::Command::cargo_bin("cargo-valgrind")
+        .unwrap()
+        .arg("valgrind")
+        .arg("run")
+        .arg("-q") // silence cargo output
+        .args(TARGET_CRATE)
+        .arg("--bin=issue-36")
+        .stderr(process::Stdio::piped())
+        .stdout(process::Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    // wait until program is certainly started
+    thread::sleep(Duration::from_millis(500));
+
+    // kill `cargo valgrind`, which should kill the run program as well.
+    cargo_valgrind.kill().unwrap();
+    cargo_valgrind.wait().unwrap();
+
+    // Check, what the helper program printed. The run program prints one line
+    // every second. Since this test should have killed the program before the
+    // first second is elapsed, there should be no output.
+    let mut stdout = String::new();
+    cargo_valgrind
+        .stdout
+        .unwrap()
+        .read_to_string(&mut stdout)
+        .unwrap();
+    assert_eq!("", stdout, "Program must end before the first print");
+}
