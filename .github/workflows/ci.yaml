@@ -1,6 +1,7 @@
 name: Continuos Integration
 on:
   push:
+  pull_request:
 env:
   CARGO_TERM_COLOR: always
 jobs:
