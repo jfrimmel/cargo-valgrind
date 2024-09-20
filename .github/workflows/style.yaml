@@ -1,6 +1,7 @@
 name: Style
 on:
   push:
+  pull_request:
 defaults:
   run:
     shell: bash
