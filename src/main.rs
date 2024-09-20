@@ -89,7 +89,7 @@ fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
     stack
         .frames
         .iter()
-        .for_each(|frame| eprintln!("             at {}", frame));
+        .for_each(|frame| eprintln!("             at {frame}"));
 }
 
 fn main() {
@@ -146,11 +146,11 @@ fn main() {
             {
                 let error = "Error".red().bold();
                 let info = "Info".cyan().bold();
-                eprintln!("{:>12}: looks like the program overflowed its stack", error);
-                eprintln!("{:>12}: valgrind says:", info);
+                eprintln!("{error:>12}: looks like the program overflowed its stack");
+                eprintln!("{info:>12}: valgrind says:");
                 output
                     .lines()
-                    .for_each(|line| eprintln!("              {}", line));
+                    .for_each(|line| eprintln!("              {line}"));
                 134 // default exit code for stack overflows
             }
             Err(e) => {
