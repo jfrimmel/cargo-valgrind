@@ -109,7 +109,7 @@ fn interrupted_program_execution() {
     thread::sleep(Duration::from_millis(500));
 
     // kill `cargo valgrind`, which should kill the run program as well.
-    cargo_valgrind.kill().unwrap();
+    unsafe { libc::kill(cargo_valgrind.id() as _, libc::SIGINT) }; // Ctrl+C
     cargo_valgrind.wait().unwrap();
 
     // Check, what the helper program printed. The run program prints one line

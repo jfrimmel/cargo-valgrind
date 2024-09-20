@@ -61,6 +61,7 @@ dependencies = [
  "assert_cmd",
  "bytesize",
  "colored",
+ "libc",
  "predicates",
  "serde",
  "serde-xml-rs",

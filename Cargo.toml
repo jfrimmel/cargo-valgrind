@@ -50,3 +50,6 @@ version = "2"
 
 [dev-dependencies.predicates]
 version = "2"
+
+[dev-dependencies.libc]
+version = "0.2"
