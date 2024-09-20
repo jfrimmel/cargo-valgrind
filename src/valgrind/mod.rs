@@ -63,7 +63,7 @@ where
         valgrind.args(additional_args.split(' '));
     }
 
-    let cargo = valgrind
+    let mut cargo = valgrind
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
         .args(command)
@@ -110,17 +110,24 @@ where
         Ok(xml)
     });
 
-    let output = cargo.wait_with_output().map_err(|_| Error::ProcessFailed)?;
-    if output.status.success() {
+    let status = cargo.wait().map_err(|_| Error::ProcessFailed)?;
+    if status.success() {
         let xml = xml.join().expect("Reader-thread panicked")?;
         Ok(xml)
     } else {
         // this does not really terminalte the thread, but detaches it. Despite
         // that, the thread will be killed, if the main thread exits.
         drop(xml);
-        Err(Error::ValgrindFailure(
-            String::from_utf8_lossy(&output.stderr).to_string(),
-        ))
+
+        let mut buffer = Vec::default();
+        cargo
+            .stderr
+            .as_mut()
+            .expect("stderr is piped and thus has to be available")
+            .read_to_end(&mut buffer)
+            .ok();
+        let stderr = String::from_utf8_lossy(&buffer);
+        Err(Error::ValgrindFailure(stderr.to_string()))
     }
 
     // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
