@@ -29,17 +29,6 @@ const PANIC_HEADER: &str = "
     how to reproduce it.
     ";
 
-/// Panic with a custom panic output.
-///
-/// This is helpful for printing debug information to the panic message.
-#[macro_export]
-#[allow(clippy::module_name_repetitions)] // necessary for exported macro
-macro_rules! panic_with {
-    ($e:expr) => {
-        std::panic::panic_any($e)
-    };
-}
-
 /// Replaces any previous hook with the custom hook of this application.
 ///
 /// This custom hook points the user to the project repository and asks them to
