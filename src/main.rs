@@ -76,9 +76,7 @@ fn main() {
                 127
             }
             Ok(_) => 0,
-            Err(e @ valgrind::Error::MalformedOutput(..)) => {
-                panic_with!(e);
-            }
+            Err(e @ valgrind::Error::MalformedOutput(..)) => std::panic::panic_any(e), // the panic handler catches this and reports it appropriately
             Err(valgrind::Error::ValgrindFailure(output)) if output.contains(STACK_OVERFLOW) => {
                 output::display_stack_overflow(&output);
                 134 // default exit code for stack overflows
