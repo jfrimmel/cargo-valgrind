@@ -78,13 +78,7 @@ fn main() {
             Err(valgrind::Error::ValgrindFailure(output))
                 if output.contains("main thread stack using the --main-stacksize= flag") =>
             {
-                let error = "Error".red().bold();
-                let info = "Info".cyan().bold();
-                eprintln!("{error:>12}: looks like the program overflowed its stack");
-                eprintln!("{info:>12}: valgrind says:");
-                output
-                    .lines()
-                    .for_each(|line| eprintln!("              {line}"));
+                output::display_stack_overflow(&output);
                 134 // default exit code for stack overflows
             }
             Err(e) => {

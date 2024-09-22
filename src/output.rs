@@ -68,3 +68,14 @@ fn display_stack_trace(msg: &str, stack: &valgrind::xml::Stack) {
         .iter()
         .for_each(|frame| eprintln!("             at {frame}"));
 }
+
+/// Write out an error message for describing the stack overflow message.
+pub fn display_stack_overflow(output: &str) {
+    let error = "Error".red().bold();
+    let info = "Info".cyan().bold();
+    eprintln!("{error:>12}: looks like the program overflowed its stack");
+    eprintln!("{info:>12}: valgrind says:");
+    output
+        .lines()
+        .for_each(|line| eprintln!("              {line}"));
+}
