@@ -19,6 +19,8 @@ categories = [
     "development-tools::cargo-plugins",
 ]
 exclude = [
+    ".github",
+    ".vscode",
     "CHANGELOG.md",
     "tests",
 ]
