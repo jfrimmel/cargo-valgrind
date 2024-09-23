@@ -5,11 +5,13 @@ on:
 env:
   CARGO_TERM_COLOR: always
 jobs:
-  # build the crate on Linux, Windows and MacOS (can only be tested on Linux)
+  # Build the crate on Linux and MacOS (can only be tested on Linux). Windows is
+  # not tested, as this crate requires a POSIX-only-tool (`valgrind`), which is
+  # not available on Windows.
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         rust: [stable, nightly]
     runs-on: ${{ matrix.os }}
     steps:
