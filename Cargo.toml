@@ -7,46 +7,20 @@ description = "A cargo subcommand for running valgrind"
 repository = "https://github.com/jfrimmel/cargo-valgrind"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-keywords = [
-    "cargo",
-    "subcomand",
-    "cargo-subcommand",
-    "valgrind",
-    "cli",
-]
-categories = [
-    "development-tools",
-    "development-tools::cargo-plugins",
-]
-exclude = [
-    "CHANGELOG.md",
-    "tests",
-]
+keywords = ["cargo", "subcommand", "cargo-subcommand", "valgrind", "cli"]
+categories = ["development-tools", "development-tools::cargo-plugins"]
+exclude = [".github", ".vscode", "CHANGELOG.md", "tests"]
 
 [features]
 default = ["textwrap"]
 
-[dependencies.serde]
-version = "1"
-features = ["derive"]
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde-xml-rs = { version = "0.5", default-features = false }
+colored = "1.9.4"
+bytesize = "1"
+textwrap = { version = "0.14", optional = true, features = ["terminal_size"] }
 
-[dependencies.serde-xml-rs]
-version = "0.5"
-default-features = false
-
-[dependencies.colored]
-version = "1.9.4"
-
-[dependencies.bytesize]
-version = "1"
-
-[dependencies.textwrap]
-version = "0.14"
-optional = true
-features = ["terminal_size"]
-
-[dev-dependencies.assert_cmd]
-version = "2"
-
-[dev-dependencies.predicates]
-version = "2"
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "2"
