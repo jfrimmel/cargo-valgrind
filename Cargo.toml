@@ -26,27 +26,13 @@ exclude = [
 [features]
 default = ["textwrap"]
 
-[dependencies.serde]
-version = "1"
-features = ["derive"]
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde-xml-rs = { version = "0.5", default-features = false }
+colored = "1.9.4"
+bytesize = "1"
+textwrap = { version = "0.14", optional = true, features = ["terminal_size"] }
 
-[dependencies.serde-xml-rs]
-version = "0.5"
-default-features = false
-
-[dependencies.colored]
-version = "1.9.4"
-
-[dependencies.bytesize]
-version = "1"
-
-[dependencies.textwrap]
-version = "0.14"
-optional = true
-features = ["terminal_size"]
-
-[dev-dependencies.assert_cmd]
-version = "2"
-
-[dev-dependencies.predicates]
-version = "2"
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "2"
