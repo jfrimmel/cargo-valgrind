@@ -83,6 +83,8 @@ Now the command line is `cargo valgrind <command>`, where `<command>` can be any
 You need to have `valgrind` installed and in the `PATH` (you can test this by running `valgrind --help` in your shell).
 
 You'll also need to have `cargo` installed and in the `PATH`, but since this is a cargo subcommand, you will almost certainly have it already installed.
+Note, that this tool is only supported on platforms, that have `valgrind` available.
+The code is built on MacOS and Linux on x86_64, but the tests are only run under Linux.
 
 ## Install the binary
 ### Use pre-built binaries
