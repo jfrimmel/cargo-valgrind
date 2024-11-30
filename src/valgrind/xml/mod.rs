@@ -164,7 +164,7 @@ pub struct Frame {
 }
 impl Display for Frame {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.write_str(self.function.as_ref().unwrap_or(&"unknown".into()))?;
+        f.write_str(self.function.as_ref().map_or("unknown", |s| s.as_str()))?;
         if let Some(file) = &self.file {
             f.write_str(" (")?;
             f.write_str(file)?;
@@ -183,7 +183,7 @@ fn deserialize_hex<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D:
 
 /// A visitor for parsing a `u64` in the format `0xDEADBEEF`.
 struct HexVisitor;
-impl<'de> Visitor<'de> for HexVisitor {
+impl Visitor<'_> for HexVisitor {
     type Value = u64;
 
     fn expecting(&self, f: &mut Formatter) -> fmt::Result {

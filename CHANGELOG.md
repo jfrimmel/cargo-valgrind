@@ -2,6 +2,9 @@
 
 ## unreleased
 - Add more helpful error message if the program under test overflows its stack ([#93](https://github.com/jfrimmel/cargo-valgrind/pull/93))
+- Perform LTO on release ([#109](https://github.com/jfrimmel/cargo-valgrind/pull/109))
+- Updated documentation
+- Raised MSRV to 1.58
 
 ## Version 2.2.1
 - Ensure, that consistent tag names are used ([#89](https://github.com/jfrimmel/cargo-valgrind/pull/89)).

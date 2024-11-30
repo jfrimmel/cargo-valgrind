@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update stable && rustup default stable
+      - run: rustup update --no-self-update 1.83 && rustup default 1.83
       - run: rustup component add clippy
       - name: Run linter
         run: cargo clippy --color=always -- -D warnings
