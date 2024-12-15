@@ -1,0 +1,27 @@
+# It can happen, that new compiler versions introduce new behavior to the Rust
+# standard library, which might impact this tool (see rust-lang/rust#133574 for
+# an example of such an issue). Therefore this job builds the code with the
+# current beta compiler to detect potential issues before they reach the stable
+# compiler/standard library. The jobs runs periodically.
+name: Check against Rust Beta versions
+on:
+  schedule:
+    - cron: '0 9 * * SUN'  # run at every Sunday morning
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update beta && rustup default beta
+      - name: Compile the code with the beta compiler
+        id: build-beta
+        run: |
+          set -uex
+          if ! cargo test > error.log 2>&1; then
+            printf 'Hello, I have detected, that this repository does not work with the current beta compiler.\n\nIt looks like, there were changes introduced, that broke this repository. The error was:\n```console\n%s\n```\nPlease take actions to fix this before the behavior reaches stable.' "$(< error.log)" | gh issue create --title 'The compilation fails with current beta compiler' --body-file -
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
