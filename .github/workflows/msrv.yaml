@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install valgrind
-        run: sudo apt install valgrind
+        run: sudo apt-get update && sudo apt-get install valgrind
       - run: rustup update $MSRV && rustup default $MSRV
       - name: Run tests
         run: cargo test

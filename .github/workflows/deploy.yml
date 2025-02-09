@@ -72,7 +72,7 @@ jobs:
     - name: Install musl
       if: contains(matrix.target, 'linux-musl')
       run: |
-        sudo apt-get install musl-tools
+        sudo apt-get update && sudo apt-get install musl-tools
 
     - name: Build cargo-valgrind
       run: |
