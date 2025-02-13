@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install valgrind
-        run: sudo apt install valgrind
+        run: sudo apt-get update && sudo apt-get install valgrind
       - run: rustup update --no-self-update 1.82 && rustup default 1.82
       - name: Run tests
         run: cargo test

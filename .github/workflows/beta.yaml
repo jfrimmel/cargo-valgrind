@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install valgrind
-        run: sudo apt install valgrind
+        run: sudo apt-get update && sudo apt-get install valgrind
       - run: rustup update beta && rustup default beta
       - name: Compile the code with the beta compiler
         id: build-beta
