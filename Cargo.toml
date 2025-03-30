@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "cargo-subcommand", "valgrind", "cli"]
 categories = ["development-tools", "development-tools::cargo-plugins"]
-exclude = [".github", ".vscode", "CHANGELOG.md", "tests"]
+exclude = [".clippy.toml", ".github", ".mailmap", "CHANGELOG.md", "tests"]
 
 [features]
 default = ["textwrap"]
