@@ -3,7 +3,9 @@
 pub mod xml;
 
 use serde::Deserialize;
+use std::ffi::OsString;
 use std::net::{SocketAddr, TcpListener};
+use std::path::Path;
 use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
@@ -46,7 +48,7 @@ impl fmt::Display for Error {
 /// Execute a certain command inside of valgrind and collect the [`Output`].
 ///
 /// [`Output`]: xml::Output
-pub fn execute<S, I>(command: I) -> Result<xml::Output, Error>
+pub fn execute<S, I>(command: I, suppressions: &[&Path]) -> Result<xml::Output, Error>
 where
     S: AsRef<OsStr>,
     I: IntoIterator<Item = S>,
@@ -63,9 +65,17 @@ where
         valgrind.args(additional_args.split(' '));
     }
 
+    // Create a suppression-argument for each provided suppression-file
+    let suppressions = suppressions.iter().map(|path| {
+        let mut option = OsString::from("--suppressions=");
+        option.push(path.as_os_str());
+        option
+    });
+
     let cargo = valgrind
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
+        .args(suppressions)
         .args(command)
         .stderr(Stdio::piped())
         .spawn()

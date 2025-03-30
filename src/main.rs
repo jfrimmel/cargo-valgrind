@@ -67,7 +67,7 @@ fn main() {
         // first argument is the command to execute.
         let command = env::args_os().skip(1);
 
-        let exit_code = match valgrind::execute(command) {
+        let exit_code = match valgrind::execute(command, &[]) {
             Ok(valgrind::xml::Output {
                 errors: Some(errors),
                 ..
