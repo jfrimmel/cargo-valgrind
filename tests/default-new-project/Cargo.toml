@@ -1,0 +1,6 @@
+[package]
+name = "default-new-project"
+version = "0.1.0"
+edition = "2021"             # set to 2021 for MSRV-compatibility
+
+[dependencies]
