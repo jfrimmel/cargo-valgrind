@@ -32,6 +32,8 @@ fn duplicate_stack_fields() {
 /// [#13]: https://github.com/jfrimmel/cargo-valgrind/issues/13
 #[test]
 fn stack_overflow_in_program_under_test() {
+    let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
+
     cargo_valgrind()
         .arg("run")
         .args(TARGET_CRATE)
@@ -73,4 +75,30 @@ fn environment_variables_are_passed_to_program_under_test() {
         .env("RUST_LOG", "debug")
         .assert()
         .stdout(predicates::str::contains("RUST_LOG=debug"));
+}
+
+/// If a program crashes within running it in Valgrind, a `vgcore.<pid>`-file
+/// might be created in the current working directory. In order to not clutter
+/// the main project directory, this type can be used as a drop-guard to delete
+/// all `vgcore.*`-files within a test by using it like this:
+/// ```
+/// let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
+/// ```
+/// Note, that this deletes all found `vgcore.*`-files, not only the one created
+/// by this specific test. One should add this drop-guard to each crashing test
+/// nevertheless, as else the files will be left over, if only that specific
+/// test is run (e.g. due to test filtering).
+struct DeleteVgCoreFiles;
+impl Drop for DeleteVgCoreFiles {
+    fn drop(&mut self) {
+        std::fs::read_dir(".")
+            .unwrap()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.file_type().map_or(false, |type_| type_.is_file()))
+            .filter(|file| match file.file_name().into_string() {
+                Ok(name) if name.starts_with("vgcore.") => true,
+                _ => false,
+            })
+            .for_each(|vg_core| std::fs::remove_file(vg_core.path()).unwrap());
+    }
 }
