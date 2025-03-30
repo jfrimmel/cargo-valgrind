@@ -1,0 +1,22 @@
+{
+   Rust 1.83 standard library
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:alloc
+   fun:alloc_impl
+   fun:allocate
+   fun:{closure#0}<std::thread::Inner>
+   fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>, alloc::sync::{impl#14}::new_uninit::{closure_env#0}<std::thread::Inner>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>>>
+   fun:new_uninit<std::thread::Inner>
+   fun:new_inner
+   fun:new_main
+   fun:init
+   fun:{closure#0}
+   fun:do_call<std::rt::lang_start_internal::{closure_env#0}, ()>
+   fun:try<(), std::rt::lang_start_internal::{closure_env#0}>
+   fun:catch_unwind<std::rt::lang_start_internal::{closure_env#0}, ()>
+   fun:_ZN3std2rt19lang_start_internal17h1c66660c99c8424cE
+   fun:_ZN3std2rt10lang_start17h6a655fabb2038567E
+   fun:main
+}
