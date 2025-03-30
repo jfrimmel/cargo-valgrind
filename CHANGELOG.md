@@ -3,6 +3,7 @@
 ## unreleased
 - Add more helpful error message if the program under test overflows its stack ([#93](https://github.com/jfrimmel/cargo-valgrind/pull/93))
 - Perform LTO on release ([#109](https://github.com/jfrimmel/cargo-valgrind/pull/109))
+- Use more robust host information detection ([#77](https://github.com/jfrimmel/cargo-valgrind/pull/77), [#95](https://github.com/jfrimmel/cargo-valgrind/pull/95))
 - Updated documentation
 - Raised MSRV to 1.58
 
