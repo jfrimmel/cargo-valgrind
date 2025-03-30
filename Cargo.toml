@@ -3,6 +3,7 @@ name = "cargo-valgrind"
 version = "2.2.1"
 authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
 edition = "2018"
+rust-version = "1.58.1"
 description = "A cargo subcommand for running valgrind"
 repository = "https://github.com/jfrimmel/cargo-valgrind"
 readme = "README.md"
