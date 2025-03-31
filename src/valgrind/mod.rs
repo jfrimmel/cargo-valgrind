@@ -4,7 +4,6 @@ pub mod xml;
 
 use serde::Deserialize;
 use std::ffi::OsString;
-use std::fs;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{env, fmt, io::Read};
@@ -65,21 +64,23 @@ where
         valgrind.args(additional_args.split(' '));
     }
 
-    // Create a suppression-argument for each provided suppression-file
-    let temp_dir = temp_dir::TempDir::with_prefix("valgrind-suppressions")
-        .expect("could not create temporary directory");
-    let suppressions = SUPPRESSIONS.iter().enumerate().map(|(nr, content)| {
-        let file = temp_dir.child(format!("suppression-{nr}"));
-        fs::write(&file, content).unwrap();
+    // Apply the list of suppressions provided in the `suppressions` directory
+    // (and by the build-script). The suppression file contents will all be
+    // appended into a long string, which is written to a temporary file. This
+    // file is then used as a suppression-file-argument to `valgrind`.
+    let suppressions = temp_file::TempFile::with_prefix("valgrind-suppressions")
+        .expect("could not create temporary suppression file")
+        .with_contents(SUPPRESSIONS.join("\n").as_bytes())
+        .expect("could not write to temporary suppression file");
+    valgrind.arg({
         let mut option = OsString::from("--suppressions=");
-        option.push(file);
+        option.push(suppressions.path());
         option
     });
 
     let cargo = valgrind
         .arg("--xml=yes")
         .arg(format!("--xml-socket={}:{}", address.ip(), address.port()))
-        .args(suppressions)
         .args(command)
         .stderr(Stdio::piped())
         .spawn()

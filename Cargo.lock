@@ -64,7 +64,7 @@ dependencies = [
  "predicates",
  "serde",
  "serde-xml-rs",
- "temp-dir",
+ "temp-file",
  "textwrap",
 ]
 
@@ -334,10 +334,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "temp-dir"
-version = "0.1.14"
+name = "temp-file"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc1ee6eef34f12f765cb94725905c6312b6610ab2b0940889cfe58dae7bc3c72"
+checksum = "b5ff282c3f91797f0acb021f3af7fffa8a78601f0f2fd0a9f79ee7dcf9a9af9e"
 
 [[package]]
 name = "terminal_size"
