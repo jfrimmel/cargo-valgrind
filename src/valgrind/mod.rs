@@ -3,6 +3,7 @@
 pub mod xml;
 
 use serde::Deserialize;
+use std::ffi::OsString;
 use std::net::{SocketAddr, TcpListener};
 use std::process::Command;
 use std::{env, fmt, io::Read};
@@ -62,6 +63,20 @@ where
     if let Ok(additional_args) = env::var("VALGRINDFLAGS") {
         valgrind.args(additional_args.split(' '));
     }
+
+    // Apply the list of suppressions provided in the `suppressions` directory
+    // (and by the build-script). The suppression file contents will all be
+    // appended into a long string, which is written to a temporary file. This
+    // file is then used as a suppression-file-argument to `valgrind`.
+    let suppressions = temp_file::TempFile::with_prefix("valgrind-suppressions")
+        .expect("could not create temporary suppression file")
+        .with_contents(SUPPRESSIONS.as_bytes())
+        .expect("could not write to temporary suppression file");
+    valgrind.arg({
+        let mut option = OsString::from("--suppressions=");
+        option.push(suppressions.path());
+        option
+    });
 
     let cargo = valgrind
         .arg("--xml=yes")
@@ -125,3 +140,6 @@ where
 
     // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
 }
+
+// Include the list of suppression file contents provided by this repository.
+include!(concat!(env!("OUT_DIR"), "/suppressions.rs"));
