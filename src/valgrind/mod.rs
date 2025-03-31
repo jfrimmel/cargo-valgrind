@@ -70,7 +70,7 @@ where
     // file is then used as a suppression-file-argument to `valgrind`.
     let suppressions = temp_file::TempFile::with_prefix("valgrind-suppressions")
         .expect("could not create temporary suppression file")
-        .with_contents(SUPPRESSIONS.join("\n").as_bytes())
+        .with_contents(SUPPRESSIONS.as_bytes())
         .expect("could not write to temporary suppression file");
     valgrind.arg({
         let mut option = OsString::from("--suppressions=");
