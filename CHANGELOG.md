@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.3.0
 - Suppress wrongly reported leaks in the Rust standard library versions 1.83 and 1.86 ([#121](https://github.com/jfrimmel/cargo-valgrind/pull/121))
 - Add more helpful error message if the program under test overflows its stack ([#93](https://github.com/jfrimmel/cargo-valgrind/pull/93))
 - Perform LTO on release ([#109](https://github.com/jfrimmel/cargo-valgrind/pull/109))
