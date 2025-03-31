@@ -74,6 +74,9 @@ Un-commenting the `unsafe { CString::from_raw(ptr) };` re-takes the memory and f
 
 If you would like to pass flags to valgrind (for example to run an alternate subtool), you can set the `VALGRINDFLAGS` environment variable to a space-delimited list of valid Valgrind options.
 
+`cargo valgrind` automatically applies some suppressions for wrongly reported leaks within the Rust standard library.
+This makes the tool more powerful than a normal valgrind invocation.
+
 _Note_: users of `cargo-valgrind` version 1.x should mind the changed command line.
 Previously there was a `cargo valgrind` subcommand, that replaced the `cargo run` or `cargo test` commands.
 Now the command line is `cargo valgrind <command>`, where `<command>` can be any normal cargo subcommand.
