@@ -4,8 +4,8 @@ pub mod xml;
 
 use serde::Deserialize;
 use std::ffi::OsString;
+use std::fs;
 use std::net::{SocketAddr, TcpListener};
-use std::path::Path;
 use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
@@ -48,7 +48,7 @@ impl fmt::Display for Error {
 /// Execute a certain command inside of valgrind and collect the [`Output`].
 ///
 /// [`Output`]: xml::Output
-pub fn execute<S, I>(command: I, suppressions: &[&Path]) -> Result<xml::Output, Error>
+pub fn execute<S, I>(command: I) -> Result<xml::Output, Error>
 where
     S: AsRef<OsStr>,
     I: IntoIterator<Item = S>,
@@ -66,9 +66,13 @@ where
     }
 
     // Create a suppression-argument for each provided suppression-file
-    let suppressions = suppressions.iter().map(|path| {
+    let temp_dir = temp_dir::TempDir::with_prefix("valgrind-suppressions")
+        .expect("could not create temporary directory");
+    let suppressions = SUPPRESSIONS.iter().enumerate().map(|(nr, content)| {
+        let file = temp_dir.child(format!("suppression-{nr}"));
+        fs::write(&file, content).unwrap();
         let mut option = OsString::from("--suppressions=");
-        option.push(path.as_os_str());
+        option.push(file);
         option
     });
 
@@ -135,3 +139,6 @@ where
 
     // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
 }
+
+// Include the list of suppression file contents provided by this repository.
+include!(concat!(env!("OUT_DIR"), "/suppressions.rs"));
