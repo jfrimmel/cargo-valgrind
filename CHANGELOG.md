@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.3.1
 - Fix suppression files for 1.86
 
 ## Version 2.3.0
