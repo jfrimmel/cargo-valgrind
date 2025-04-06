@@ -1,6 +1,7 @@
 # Changelog
 
 ## unreleased
+- Fix suppression files for 1.86
 
 ## Version 2.3.0
 - Suppress wrongly reported leaks in the Rust standard library versions 1.83 and 1.86 ([#121](https://github.com/jfrimmel/cargo-valgrind/pull/121))
