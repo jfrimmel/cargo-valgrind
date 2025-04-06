@@ -9,7 +9,7 @@
    fun:{closure#0}<std::thread::Inner>
    fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>, alloc::sync::{impl#14}::new_uninit::{closure_env#0}<std::thread::Inner>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>>>
    fun:new_uninit<std::thread::Inner>
-   fun:_ZN3std6thread6Thread3new17hfefd1c7ad06cf00aE
-   fun:_ZN3std6thread7current12init_current17h3c2a16458c19e8ecE
+   fun:_ZN3std6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
    fun:current_or_unnamed
 }
