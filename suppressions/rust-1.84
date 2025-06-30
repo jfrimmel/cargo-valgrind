@@ -3,9 +3,9 @@
    Memcheck:Leak
    match-leak-kinds: possible
    fun:malloc
-   fun:_ZN3std6thread6Thread3new17h2befa5bc50e06d13E
-   fun:_ZN3std6thread7current12init_current17h995cf44c460e5ccbE
-   fun:_ZN3std4sync4mpmc7context7Context3new17hbea3e84f72b44257E
-   fun:_ZN3std3sys12thread_local6native4lazy20Storage$LT$T$C$D$GT$16get_or_init_slow17h8072c00318bcc34dE
-   fun:_ZN3std4sync4mpmc4list16Channel$LT$T$GT$4recv17hb8facc0251a95a60E
+   fun:_ZN3std6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:_ZN3std4sync4mpmc7context7Context3new*
+   fun:_ZN3std3sys12thread_local6native4lazy20Storage*
+   fun:_ZN3std4sync4mpmc4list16Channel$LT$T$GT$4recv*
 }
