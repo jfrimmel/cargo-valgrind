@@ -77,6 +77,20 @@ fn environment_variables_are_passed_to_program_under_test() {
         .stdout(predicates::str::contains("RUST_LOG=debug"));
 }
 
+/// Issue: [#126]
+///
+/// [#126]: https://github.com/jfrimmel/cargo-valgrind/issues/126
+#[test]
+fn empty_tests_not_leak_in_release_mode() {
+    const FFI_TARGET_CRATE: &[&str] = &["--manifest-path", "tests/ffi-bug/Cargo.toml"];
+    cargo_valgrind()
+        .arg("test")
+        .arg("--release")
+        .args(FFI_TARGET_CRATE)
+        .assert()
+        .success();
+}
+
 /// If a program crashes within running it in Valgrind, a `vgcore.<pid>`-file
 /// might be created in the current working directory. In order to not clutter
 /// the main project directory, this type can be used as a drop-guard to delete

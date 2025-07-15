@@ -1,0 +1,11 @@
+{
+   Rust 1.84 standard library
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_ZN3std6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:_ZN3std4sync4mpmc7context7Context3new*
+   fun:_ZN3std3sys12thread_local6native4lazy20Storage*
+   fun:_ZN3std4sync4mpmc4list16Channel$LT$T$GT$4recv*
+}
