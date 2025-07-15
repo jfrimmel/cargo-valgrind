@@ -1,6 +1,7 @@
 # Changelog
 
 ## unreleased
+- Add suppression for standard library in release mode ([#127](https://github.com/jfrimmel/cargo-valgrind/pull/127))
 
 ## Version 2.3.1
 - Fix suppression files for 1.86
