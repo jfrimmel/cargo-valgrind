@@ -1,6 +1,7 @@
 # Changelog
 
 ## unreleased
+- Make some suppression files for standard library more general ([#129](https://github.com/jfrimmel/cargo-valgrind/pull/129))
 
 ## Version 2.3.2
 - Add suppression for standard library in release mode ([#127](https://github.com/jfrimmel/cargo-valgrind/pull/127))
