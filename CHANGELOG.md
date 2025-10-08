@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.3.3
 - Make some suppression files for standard library more general ([#129](https://github.com/jfrimmel/cargo-valgrind/pull/129))
 
 ## Version 2.3.2
