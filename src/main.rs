@@ -26,10 +26,6 @@ use colored::Colorize as _;
 use std::env;
 use std::process;
 
-/// Part of the output message of `valgrind` if a possible stack overflow is
-/// detected.
-const STACK_OVERFLOW: &str = "main thread stack using the --main-stacksize= flag";
-
 fn main() {
     panic::replace_hook();
 
@@ -94,7 +90,7 @@ fn main() {
                 128 + signal_nr
             }
             Err(e @ valgrind::Error::MalformedOutput(..)) => std::panic::panic_any(e), // the panic handler catches this and reports it appropriately
-            Err(valgrind::Error::ValgrindFailure(output)) if output.contains(STACK_OVERFLOW) => {
+            Err(valgrind::Error::StackOverflow(output)) => {
                 output::display_stack_overflow(&output);
                 134 // default exit code for stack overflows
             }

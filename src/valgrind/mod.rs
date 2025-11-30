@@ -10,6 +10,10 @@ use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
 
+/// Part of the output message of `valgrind` if a possible stack overflow is
+/// detected.
+const STACK_OVERFLOW: &str = "main thread stack using the --main-stacksize= flag";
+
 /// Error type for valgrind-execution-related failures.
 #[derive(Debug)]
 pub enum Error {
@@ -25,6 +29,10 @@ pub enum Error {
     ///
     /// The error output of valgrind is captured.
     ValgrindFailure(String),
+    /// A stack overflow was detected in the program under test.
+    ///
+    /// The valgrind error output and help information is captured.
+    StackOverflow(String),
     /// Valgrind (most likely) did execute normally, but the run program did
     /// receive a signal (e.g. an abort).
     ///
@@ -46,6 +54,7 @@ impl fmt::Display for Error {
             Self::SocketConnection => write!(f, "local TCP I/O error"),
             Self::ProcessFailed => write!(f, "cannot start valgrind process"),
             Self::ProcessSignal(nr, _) => write!(f, "program exited with signal {nr}"),
+            Self::StackOverflow(stderr) => write!(f, "stack overflow detected: {stderr}"),
             Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {s}"),
             Self::MalformedOutput(e, _) => write!(f, "unexpected valgrind output: {e}"),
         }
@@ -139,7 +148,13 @@ where
         Ok(xml)
     } else if let Some(signal_nr) = output.status.signal() {
         let xml = xml.join().expect("Reader-thread panicked")?;
-        Err(Error::ProcessSignal(signal_nr, xml))
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if stderr.contains(STACK_OVERFLOW) {
+            Err(Error::StackOverflow(stderr.to_string()))
+        } else {
+            Err(Error::ProcessSignal(signal_nr, xml))
+        }
     } else {
         // this does not really terminalte the thread, but detaches it. Despite
         // that, the thread will be killed, if the main thread exits.
