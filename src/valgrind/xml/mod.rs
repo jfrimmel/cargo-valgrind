@@ -28,14 +28,28 @@ pub struct Output {
 
 /// The version of the XML format.
 ///
-/// Although there are also versions 1-3, there is only a variant for version 4,
-/// so that all older formats will fail. The other `struct`s in this file assume
-/// the newest protocol version.
+/// Although there are also versions 1-3, there is only a variant for version 4
+/// and newer, so that all older formats will fail. The other `struct`s in this
+/// file assume the newer protocol versions, which are largely compatible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 enum ProtocolVersion {
+    // older formats are not supported and won't be in the future
+    /// Protocol [version 4].
+    ///
+    /// [version 4]: https://sourceware.org/git/?p=valgrind.git;a=blob_plain;f=docs/internals/xml-output-protocol4.txt;hb=d772e25995c3400eecf2b6070e0bf3411447c3d1
     #[serde(rename = "4")]
     Version4,
-    // other formats are not supported
+    /// Protocol [version 5].
+    ///
+    /// [version 5]: https://sourceware.org/git/?p=valgrind.git;a=blob_plain;f=docs/internals/xml-output-protocol5.txt;hb=48d64d0e6bb72220bb2557be4f427a57038dfbc6
+    #[serde(rename = "5")]
+    Version5,
+    /// Protocol [version 6].
+    ///
+    /// [version 6]: https://sourceware.org/git/?p=valgrind.git;a=blob_plain;f=docs/internals/xml-output-protocol6.txt;hb=7786b075abef51ca3d84b9717915f04b32950b32
+    #[serde(rename = "6")]
+    Version6,
+    // newer versions are not yet supported! Feel free to add one via a PR.
 }
 
 /// The check tool used by valgrind.
