@@ -4,11 +4,12 @@ use std::{fs, io::BufReader};
 use serde_xml_rs::{from_reader, from_str};
 
 #[test]
-fn sample_output() {
+fn support_for_xml_version4() {
     let xml: Output = from_reader(BufReader::new(
-        fs::File::open("src/valgrind/xml/memory-leaks.xml").expect("Could not open test file"),
+        fs::File::open("src/valgrind/xml/version4.xml").expect("Could not open test file"),
     ))
     .expect("Could not read test file");
+    assert_eq!(xml.protocol_version, super::ProtocolVersion::Version4);
 
     let errors = xml.errors.expect("There are errors in the test case");
     assert_eq!(errors.len(), 8);
@@ -54,6 +55,17 @@ fn sample_output() {
             blocks: 1,
         }
     );
+}
+
+#[test]
+fn support_for_xml_version6() {
+    let xml: Output = from_reader(BufReader::new(
+        fs::File::open("src/valgrind/xml/version6.xml").expect("Could not open test file"),
+    ))
+    .expect("Could not read test file");
+
+    assert_eq!(xml.protocol_version, super::ProtocolVersion::Version6);
+    assert_eq!(xml.errors, None);
 }
 
 #[test]
