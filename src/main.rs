@@ -59,9 +59,8 @@ fn main() {
         .join("\n");
         println!("{text}");
     } else if is_cargo_subcommand() {
-        if !driver::driver().expect("Could not execute subcommand") {
-            process::exit(200);
-        }
+        let exit_status = driver::driver().expect("Could not execute subcommand");
+        process::exit(exit_status.code().unwrap_or(200));
     } else {
         // we are running as the cargo runner, therefore everything except the
         // first argument is the command to execute.

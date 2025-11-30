@@ -4,7 +4,7 @@ use std::env;
 use std::ffi::OsString;
 use std::io;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, ExitStatus};
 
 /// The prefix line for the target host output.
 const HOST_PREFIX: &str = "host: ";
@@ -28,7 +28,7 @@ fn search_for_host(command: &mut Command) -> Option<String> {
 /// # Errors
 /// This function returns an I/O error, if a subprocess could not be spawned or
 /// executed.
-pub fn driver() -> io::Result<bool> {
+pub fn driver() -> io::Result<ExitStatus> {
     let cargo = env::var_os("CARGO").expect("CARGO environment variable is not set");
     let rustc = Path::new(&cargo).with_file_name("rustc");
 
@@ -50,11 +50,10 @@ pub fn driver() -> io::Result<bool> {
         .next()
         .unwrap_or_else(|| OsString::from("cargo-valgrind"));
 
-    Ok(Command::new(cargo)
+    Command::new(cargo)
         .args(env::args_os().skip(2))
         .envs(env::vars_os())
         .env(runner, cargo_valgrind)
         .spawn()?
-        .wait()?
-        .success())
+        .wait()
 }
