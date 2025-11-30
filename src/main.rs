@@ -76,6 +76,24 @@ fn main() {
                 127
             }
             Ok(_) => 0,
+            Err(valgrind::Error::ProcessSignal(
+                signal_nr,
+                valgrind::xml::Output {
+                    errors: Some(errors),
+                    ..
+                },
+            )) => {
+                output::display_errors(&errors);
+                eprintln!(
+                    "{}: the program was terminated by signal {signal_nr}",
+                    "info".cyan().bold()
+                );
+                128 + signal_nr
+            }
+            Err(valgrind::Error::ProcessSignal(signal_nr, _)) => {
+                eprintln!("{}: no memory error was detected, but the program was terminated by signal {signal_nr}", "info".cyan().bold());
+                128 + signal_nr
+            }
             Err(e @ valgrind::Error::MalformedOutput(..)) => std::panic::panic_any(e), // the panic handler catches this and reports it appropriately
             Err(valgrind::Error::ValgrindFailure(output)) if output.contains(STACK_OVERFLOW) => {
                 output::display_stack_overflow(&output);

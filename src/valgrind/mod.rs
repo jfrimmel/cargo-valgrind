@@ -5,6 +5,7 @@ pub mod xml;
 use serde::Deserialize;
 use std::ffi::OsString;
 use std::net::{SocketAddr, TcpListener};
+use std::os::unix::process::ExitStatusExt;
 use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
@@ -24,6 +25,12 @@ pub enum Error {
     ///
     /// The error output of valgrind is captured.
     ValgrindFailure(String),
+    /// Valgrind (most likely) did execute normally, but the run program did
+    /// receive a signal (e.g. an abort).
+    ///
+    /// The error contains the signal number and the normal valgrind XML output
+    /// (including any memory leaks if found until this point).
+    ProcessSignal(i32, xml::Output),
     /// The valgrind output was malformed or otherwise unexpected.
     ///
     /// This variant contains the inner deserialization error and the output of
@@ -38,6 +45,7 @@ impl fmt::Display for Error {
             Self::ValgrindNotInstalled => write!(f, "valgrind executable not found"),
             Self::SocketConnection => write!(f, "local TCP I/O error"),
             Self::ProcessFailed => write!(f, "cannot start valgrind process"),
+            Self::ProcessSignal(nr, _) => write!(f, "program exited with signal {nr}"),
             Self::ValgrindFailure(s) => write!(f, "invalid valgrind usage: {s}"),
             Self::MalformedOutput(e, _) => write!(f, "unexpected valgrind output: {e}"),
         }
@@ -129,6 +137,9 @@ where
     if output.status.success() {
         let xml = xml.join().expect("Reader-thread panicked")?;
         Ok(xml)
+    } else if let Some(signal_nr) = output.status.signal() {
+        let xml = xml.join().expect("Reader-thread panicked")?;
+        Err(Error::ProcessSignal(signal_nr, xml))
     } else {
         // this does not really terminalte the thread, but detaches it. Despite
         // that, the thread will be killed, if the main thread exits.

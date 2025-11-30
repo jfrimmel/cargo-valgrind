@@ -91,6 +91,45 @@ fn empty_tests_not_leak_in_release_mode() {
         .success();
 }
 
+/// Issue: [#135] (unhelpful output when program under test aborts)
+///
+/// [#126]: https://github.com/jfrimmel/cargo-valgrind/issues/135
+#[test]
+fn program_under_test_aborts_without_leaks() {
+    let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
+    const FFI_TARGET_CRATE: &[&str] = &["--manifest-path", "tests/program-aborts/Cargo.toml"];
+    cargo_valgrind()
+        .arg("run")
+        .args(FFI_TARGET_CRATE)
+        .arg("--bin=no_leak")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains(
+            "info: no memory error was detected, but the program was terminated by signal 6",
+        ))
+        .code(128 + 6);
+}
+
+/// Issue: [#135] (unhelpful output when program under test aborts)
+///
+/// [#126]: https://github.com/jfrimmel/cargo-valgrind/issues/135
+#[test]
+fn program_under_test_aborts_with_leaks() {
+    let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
+    const FFI_TARGET_CRATE: &[&str] = &["--manifest-path", "tests/program-aborts/Cargo.toml"];
+    cargo_valgrind()
+        .arg("run")
+        .args(FFI_TARGET_CRATE)
+        .arg("--bin=with_leak")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("Summary Leaked 4 B total"))
+        .stderr(predicates::str::contains(
+            "info: the program was terminated by signal 6",
+        ))
+        .code(128 + 6);
+}
+
 /// If a program crashes within running it in Valgrind, a `vgcore.<pid>`-file
 /// might be created in the current working directory. In order to not clutter
 /// the main project directory, this type can be used as a drop-guard to delete
