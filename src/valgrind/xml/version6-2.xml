@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!-- taken from https://github.com/jfrimmel/cargo-valgrind/issues/136 -->
+<valgrindoutput>
+
+<protocolversion>6</protocolversion>
+<protocoltool>memcheck</protocoltool>
+
+<preamble>
+  <line>Memcheck, a memory error detector</line>
+  <line>Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.</line>
+  <line>Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info</line>
+  <line>Command: /Users/vt/personal/liten-old/target/release/deps/common-e828a41e86934295 --list --format terse</line>
+</preamble>
+
+<pid>96519</pid>
+<ppid>96513</ppid>
+<tool>memcheck</tool>
+
+<args>
+  <vargv>
+    <exe>/nix/store/skvxpqppwwsfqgb4c8jhsk8s9v4cxbm6-valgrind-3.26.0/bin/valgrind</exe>
+    <arg>--suppressions=/tmp/nix-shell.7RqDUT/valgrind-suppressions179010</arg>
+    <arg>--xml=yes</arg>
+    <arg>--xml-socket=127.0.0.1:37325</arg>
+  </vargv>
+  <argv>
+    <exe>/Users/vt/personal/liten-old/target/release/deps/common-e828a41e86934295</exe>
+    <arg>--list</arg>
+    <arg>--format</arg>
+    <arg>terse</arg>
+  </argv>
+</args>
+
+<status>
+  <state>RUNNING</state>
+  <time>00:00:00:00.025 </time>
+</status>
+
+<status>
+  <state>FINISHED</state>
+  <time>00:00:00:00.410 </time>
+</status>
+
+<heap_summary>
+  <memory_in_use_at_exit>
+    <bytes>456</bytes>
+    <blocks>1</blocks>
+  </memory_in_use_at_exit>
+  <total_heap_usage>
+    <allocs>426</allocs>
+    <frees>425</frees>
+    <bytes_allocated>47,031</bytes_allocated>
+  </total_heap_usage>
+</heap_summary>
+
+<all_heap_blocks_freed>false</all_heap_blocks_freed>
+
+<leak_summary>
+  <definitely_lost>
+    <bytes>0</bytes>
+    <blocks>0</blocks>
+  </definitely_lost>
+  <indirectly_lost>
+    <bytes>0</bytes>
+    <blocks>0</blocks>
+  </indirectly_lost>
+  <possibly_lost>
+    <bytes>0</bytes>
+    <blocks>0</blocks>
+  </possibly_lost>
+  <still_reachable>
+    <bytes>456</bytes>
+    <blocks>1</blocks>
+  </still_reachable>
+  <suppressed>
+    <bytes>0</bytes>
+    <blocks>0</blocks>
+  </suppressed>
+</leak_summary>
+
+<errorcounts>
+</errorcounts>
+
+<suppcounts>
+</suppcounts>
+
+<error_summary>
+  <errors>0</errors>
+  <error_contexts>0</error_contexts>
+  <suppressed>0</suppressed>
+  <suppressed_contexts>0</suppressed_contexts>
+</error_summary>
+
+</valgrindoutput>
