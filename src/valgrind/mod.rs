@@ -5,7 +5,6 @@ pub mod xml;
 use serde::Deserialize;
 use std::ffi::OsString;
 use std::net::{SocketAddr, TcpListener};
-use std::os::unix::process::ExitStatusExt;
 use std::process::Command;
 use std::{env, fmt, io::Read};
 use std::{ffi::OsStr, process::Stdio};
@@ -146,7 +145,7 @@ where
     if output.status.success() {
         let xml = xml.join().expect("Reader-thread panicked")?;
         Ok(xml)
-    } else if let Some(signal_nr) = output.status.signal() {
+    } else if let Some(signal_nr) = is_terminated_by_signal(output.status) {
         let xml = xml.join().expect("Reader-thread panicked")?;
 
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -165,6 +164,25 @@ where
     }
 
     // TODO: use drop guard, that waits on child in order to prevent printing to stdout of the child
+}
+
+/// Check if the given exit status is caued by program termination via a signal.
+///
+/// This is a wrapper around [`std::os::unix::process::ExitStatusExt::signal()`]
+/// just necessary to have a function with the same signature on non-Unix
+/// platforms, to be able to compile there as well.
+#[cfg(unix)] // FIXME: remove once windows support is removed
+fn is_terminated_by_signal(exit_status: std::process::ExitStatus) -> Option<i32> {
+    use std::os::unix::process::ExitStatusExt;
+    exit_status.signal()
+}
+/// Check if the given exit status is caued by program termination via a signal.
+///
+/// This is a fallback for platforms, where no signals are supported and thus
+/// always returns `None` indicating, that it was not terminated by a signal.
+#[cfg(not(unix))] // FIXME: remove once windows support is removed
+fn is_terminated_by_signal(_exit_status: std::process::ExitStatus) -> Option<i32> {
+    None
 }
 
 // Include the list of suppression file contents provided by this repository.
