@@ -66,6 +66,14 @@ fn support_for_xml_version6() {
 
     assert_eq!(xml.protocol_version, super::ProtocolVersion::Version6);
     assert_eq!(xml.errors, None);
+
+    let xml: Output = from_reader(BufReader::new(
+        fs::File::open("src/valgrind/xml/version6-2.xml").expect("Could not open test file"),
+    ))
+    .expect("Could not read test file");
+
+    assert_eq!(xml.protocol_version, super::ProtocolVersion::Version6);
+    assert_eq!(xml.errors, None);
 }
 
 #[test]
