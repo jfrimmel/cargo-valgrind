@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.4.0
 - support Valgrind 3.26+ (with new XML protocol version 6)
 - forward the numeric exit code to the caller instead of always exiting with 200 on errors
 - support projects with `panic=abort` as well as other signals (e.g. SIGINT)
