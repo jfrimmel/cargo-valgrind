@@ -102,6 +102,7 @@ pub enum Kind {
     UninitCondition,
     UninitValue,
     SyscallParam,
+    FdBadUse,
     ClientCheck,
 }
 impl Kind {
@@ -122,6 +123,7 @@ impl Kind {
             | Self::UninitCondition
             | Self::UninitValue
             | Self::SyscallParam
+            | Self::FdBadUse
             | Self::ClientCheck => false,
         }
     }
@@ -143,6 +145,7 @@ impl Display for Kind {
             Self::UninitCondition => write!(f, "uninitialized condition"),
             Self::UninitValue => write!(f, "uninitialized value"),
             Self::SyscallParam => write!(f, "syscall parameter"),
+            Self::FdBadUse => write!(f, "bad file descriptor use"),
             Self::ClientCheck => write!(f, "client check"),
         }
     }

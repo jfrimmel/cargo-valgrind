@@ -112,7 +112,7 @@ fn program_under_test_aborts_without_leaks() {
 
 /// Issue: [#135] (unhelpful output when program under test aborts)
 ///
-/// [#126]: https://github.com/jfrimmel/cargo-valgrind/issues/135
+/// [#135]: https://github.com/jfrimmel/cargo-valgrind/issues/135
 #[test]
 fn program_under_test_aborts_with_leaks() {
     let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
@@ -128,6 +128,27 @@ fn program_under_test_aborts_with_leaks() {
             "info: the program was terminated by signal 6",
         ))
         .code(128 + 6);
+}
+
+/// Issue: [#134] (support for `--track-fds`)
+///
+/// [#134]: https://github.com/jfrimmel/cargo-valgrind/issues/134
+#[test]
+fn track_fds_with_errors() {
+    let _delete_all_vg_core_files_on_exit = DeleteVgCoreFiles;
+    const FFI_TARGET_CRATE: &[&str] = &["--manifest-path", "tests/wrong-fd-usage/Cargo.toml"];
+    cargo_valgrind()
+        .arg("run")
+        .args(FFI_TARGET_CRATE)
+        .env("VALGRINDFLAGS", "--track-fds=yes")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains(
+            "Summary Leaked 0 B total (1 other errors)",
+        ))
+        .stderr(predicates::str::contains(
+            "Error File descriptor 2 was closed already",
+        ));
 }
 
 /// If a program crashes within running it in Valgrind, a `vgcore.<pid>`-file
