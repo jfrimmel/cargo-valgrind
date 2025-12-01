@@ -1,6 +1,7 @@
 use super::{Error, Frame, Kind, Output, Resources};
 use std::{fs, io::BufReader};
 
+use serde::Deserialize;
 use serde_xml_rs::{from_reader, from_str};
 
 #[test]
@@ -54,6 +55,24 @@ fn support_for_xml_version4() {
             bytes: 24,
             blocks: 1,
         }
+    );
+}
+
+#[test]
+fn support_for_xml_version5_with_fd_errors() {
+    let reader =
+        fs::File::open("src/valgrind/xml/version5-badfd.xml").expect("Could not open test file");
+    let mut deserializer = serde_xml_rs::de::Deserializer::new_from_reader(BufReader::new(reader))
+        .non_contiguous_seq_elements(true);
+    let xml = Output::deserialize(&mut deserializer).expect("Could not read test file");
+    assert_eq!(xml.protocol_version, super::ProtocolVersion::Version5);
+
+    let errors = xml.errors.expect("There are errors in the test case");
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].kind, Kind::FdBadUse);
+    assert_eq!(
+        errors[0].main_info.as_deref(),
+        Some("File descriptor 2 was closed already")
     );
 }
 

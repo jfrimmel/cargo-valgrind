@@ -1,0 +1,332 @@
+<?xml version="1.0"?>
+<!-- taken from https://github.com/jfrimmel/cargo-valgrind/issues/134#issuecomment-3598866279 -->
+<valgrindoutput>
+
+<protocolversion>5</protocolversion>
+<protocoltool>memcheck</protocoltool>
+
+<preamble>
+  <line>Memcheck, a memory error detector</line>
+  <line>Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.</line>
+  <line>Using Valgrind-3.25.1 and LibVEX; rerun with -h for copyright info</line>
+  <line>Command: target/debug/wrong-fd-usage</line>
+</preamble>
+
+<pid>987418</pid>
+<ppid>987416</ppid>
+<tool>memcheck</tool>
+
+<args>
+  <vargv>
+    <exe>/usr/bin/valgrind</exe>
+    <arg>--track-fds=yes</arg>
+    <arg>--suppressions=/tmp/valgrind-suppressionsf11180</arg>
+    <arg>--xml=yes</arg>
+    <arg>--xml-socket=127.0.0.1:36335</arg>
+  </vargv>
+  <argv>
+    <exe>target/debug/wrong-fd-usage</exe>
+  </argv>
+</args>
+
+<status>
+  <state>RUNNING</state>
+  <time>00:00:00:00.025 </time>
+</status>
+
+<error>
+  <unique>0x0</unique>
+  <tid>1</tid>
+  <kind>FdBadUse</kind>
+  <fd>2</fd>
+  <what>File descriptor 2 was closed already</what>
+  <stack>
+    <frame>
+      <ip>0x4A1D4FD</ip>
+      <obj>/usr/lib/libc.so.6</obj>
+      <fn>write</fn>
+      <dir>/usr/src/debug/glibc/glibc/io/../sysdeps/unix/sysv/linux</dir>
+      <file>write.c</file>
+      <line>26</line>
+    </frame>
+    <frame>
+      <ip>0x4014E75</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>wrong_fd_usage::write_to_closed_fd</fn>
+      <dir>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/src</dir>
+      <file>main.rs</file>
+      <line>4</line>
+    </frame>
+    <frame>
+      <ip>0x4014E85</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>wrong_fd_usage::main</fn>
+      <dir>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/src</dir>
+      <file>main.rs</file>
+      <line>8</line>
+    </frame>
+    <frame>
+      <ip>0x4014EEA</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>core::ops::function::FnOnce::call_once</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops</dir>
+      <file>function.rs</file>
+      <line>250</line>
+    </frame>
+    <frame>
+      <ip>0x4014E1D</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::sys::backtrace::__rust_begin_short_backtrace</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys</dir>
+      <file>backtrace.rs</file>
+      <line>158</line>
+    </frame>
+    <frame>
+      <ip>0x4014DF0</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start::{{closure}}</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>206</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>call_once&lt;(), (dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/ops</dir>
+      <file>function.rs</file>
+      <line>287</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>do_call&lt;&amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>590</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;i32, &amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>553</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;&amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panic.rs</file>
+      <line>359</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>{closure#0}</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>175</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>do_call&lt;std::rt::lang_start_internal::{closure_env#0}, isize&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>590</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;isize, std::rt::lang_start_internal::{closure_env#0}&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>553</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;std::rt::lang_start_internal::{closure_env#0}, isize&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panic.rs</file>
+      <line>359</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start_internal</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>171</line>
+    </frame>
+    <frame>
+      <ip>0x4014DD6</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>205</line>
+    </frame>
+    <frame>
+      <ip>0x4014EAD</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>main</fn>
+    </frame>
+  </stack>
+  <auxwhat>Previously closed</auxwhat>
+  <stack>
+    <frame>
+      <ip>0x4A17D61</ip>
+      <obj>/usr/lib/libc.so.6</obj>
+      <fn>close</fn>
+      <dir>/usr/src/debug/glibc/glibc/io/../sysdeps/unix/sysv/linux</dir>
+      <file>close.c</file>
+      <line>27</line>
+    </frame>
+    <frame>
+      <ip>0x4014E3E</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>wrong_fd_usage::write_to_closed_fd</fn>
+      <dir>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/src</dir>
+      <file>main.rs</file>
+      <line>2</line>
+    </frame>
+    <frame>
+      <ip>0x4014E85</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>wrong_fd_usage::main</fn>
+      <dir>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/src</dir>
+      <file>main.rs</file>
+      <line>8</line>
+    </frame>
+    <frame>
+      <ip>0x4014EEA</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>core::ops::function::FnOnce::call_once</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops</dir>
+      <file>function.rs</file>
+      <line>250</line>
+    </frame>
+    <frame>
+      <ip>0x4014E1D</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::sys::backtrace::__rust_begin_short_backtrace</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys</dir>
+      <file>backtrace.rs</file>
+      <line>158</line>
+    </frame>
+    <frame>
+      <ip>0x4014DF0</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start::{{closure}}</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>206</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>call_once&lt;(), (dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/ops</dir>
+      <file>function.rs</file>
+      <line>287</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>do_call&lt;&amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>590</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;i32, &amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>553</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;&amp;(dyn core::ops::function::Fn&lt;(), Output=i32&gt; + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panic.rs</file>
+      <line>359</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>{closure#0}</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>175</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>do_call&lt;std::rt::lang_start_internal::{closure_env#0}, isize&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>590</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;isize, std::rt::lang_start_internal::{closure_env#0}&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panicking.rs</file>
+      <line>553</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>catch_unwind&lt;std::rt::lang_start_internal::{closure_env#0}, isize&gt;</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>panic.rs</file>
+      <line>359</line>
+    </frame>
+    <frame>
+      <ip>0x40217EF</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start_internal</fn>
+      <dir>/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>171</line>
+    </frame>
+    <frame>
+      <ip>0x4014DD6</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>std::rt::lang_start</fn>
+      <dir>/home/jfrimmel/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src</dir>
+      <file>rt.rs</file>
+      <line>205</line>
+    </frame>
+    <frame>
+      <ip>0x4014EAD</ip>
+      <obj>/home/jfrimmel/git/cargo-valgrind/tests/wrong-fd-usage/target/debug/wrong-fd-usage</obj>
+      <fn>main</fn>
+    </frame>
+  </stack>
+</error>
+
+
+<status>
+  <state>FINISHED</state>
+  <time>00:00:00:00.366 </time>
+</status>
+
+<errorcounts>
+  <pair>
+    <count>1</count>
+    <unique>0x0</unique>
+  </pair>
+</errorcounts>
+
+<suppcounts>
+</suppcounts>
+
+</valgrindoutput>
