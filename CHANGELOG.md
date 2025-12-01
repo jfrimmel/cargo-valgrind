@@ -1,6 +1,11 @@
 # Changelog
 
 ## unreleased
+- support Valgrind 3.26+ (with new XML protocol version 6)
+- forward the numeric exit code to the caller instead of always exiting with 200 on errors
+- support projects with `panic=abort` as well as other signals (e.g. SIGINT)
+- support Rust 1.93 standard library suppression files for `std::thread` ([#137](https://github.com/jfrimmel/cargo-valgrind/pull/137))
+- document some common cases of leaked memory issues in Rust
 
 ## Version 2.3.3
 - Make some suppression files for standard library more general ([#129](https://github.com/jfrimmel/cargo-valgrind/pull/129))

@@ -77,6 +77,10 @@ If you would like to pass flags to valgrind (for example to run an alternate sub
 `cargo valgrind` automatically applies some suppressions for wrongly reported leaks within the Rust standard library.
 This makes the tool more powerful than a normal valgrind invocation.
 
+Note, that in some cases, the normal destructors are not run, which can lead to memory leaks reported (as the memory _is_ actually not freed up).
+This typically happens when executing [`std::process::exit()`](https://doc.rust-lang.org/1.91.0/std/process/fn.exit.html), which does _not_ run any `Drop` impls of alive variables, thus leaking the memory.
+Either explicitly drop all variables before running `std::process::exit()` or, preferrably, migrate to returning a `Result` from main, which gracefully handles the dropping/resource releasing like normal functions do.
+
 _Note_: users of `cargo-valgrind` version 1.x should mind the changed command line.
 Previously there was a `cargo valgrind` subcommand, that replaced the `cargo run` or `cargo test` commands.
 Now the command line is `cargo valgrind <command>`, where `<command>` can be any normal cargo subcommand.
