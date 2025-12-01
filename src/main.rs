@@ -26,10 +26,6 @@ use colored::Colorize as _;
 use std::env;
 use std::process;
 
-/// Part of the output message of `valgrind` if a possible stack overflow is
-/// detected.
-const STACK_OVERFLOW: &str = "main thread stack using the --main-stacksize= flag";
-
 fn main() {
     panic::replace_hook();
 
@@ -59,9 +55,8 @@ fn main() {
         .join("\n");
         println!("{text}");
     } else if is_cargo_subcommand() {
-        if !driver::driver().expect("Could not execute subcommand") {
-            process::exit(200);
-        }
+        let exit_status = driver::driver().expect("Could not execute subcommand");
+        process::exit(exit_status.code().unwrap_or(200));
     } else {
         // we are running as the cargo runner, therefore everything except the
         // first argument is the command to execute.
@@ -76,8 +71,26 @@ fn main() {
                 127
             }
             Ok(_) => 0,
+            Err(valgrind::Error::ProcessSignal(
+                signal_nr,
+                valgrind::xml::Output {
+                    errors: Some(errors),
+                    ..
+                },
+            )) => {
+                output::display_errors(&errors);
+                eprintln!(
+                    "{}: the program was terminated by signal {signal_nr}",
+                    "info".cyan().bold()
+                );
+                128 + signal_nr
+            }
+            Err(valgrind::Error::ProcessSignal(signal_nr, _)) => {
+                eprintln!("{}: no memory error was detected, but the program was terminated by signal {signal_nr}", "info".cyan().bold());
+                128 + signal_nr
+            }
             Err(e @ valgrind::Error::MalformedOutput(..)) => std::panic::panic_any(e), // the panic handler catches this and reports it appropriately
-            Err(valgrind::Error::ValgrindFailure(output)) if output.contains(STACK_OVERFLOW) => {
+            Err(valgrind::Error::StackOverflow(output)) => {
                 output::display_stack_overflow(&output);
                 134 // default exit code for stack overflows
             }
