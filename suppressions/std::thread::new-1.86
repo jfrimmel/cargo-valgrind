@@ -1,5 +1,5 @@
 {
-   Rust 1.86 standard library
+   std::thread::new() in Rust 1.86+
    Memcheck:Leak
    match-leak-kinds: possible
    fun:malloc

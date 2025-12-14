@@ -1,5 +1,5 @@
 {
-   Rust 1.83 standard library
+   std::panic::catch_unwind() in Rust 1.83+
    Memcheck:Leak
    match-leak-kinds: possible
    fun:malloc
