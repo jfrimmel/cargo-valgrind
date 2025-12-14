@@ -152,6 +152,8 @@ impl Drop for DeleteVgCoreFiles {
                 Ok(name) if name.starts_with("vgcore.") => true,
                 _ => false,
             })
-            .for_each(|vg_core| std::fs::remove_file(vg_core.path()).unwrap());
+            .for_each(|vg_core| {
+                std::fs::remove_file(vg_core.path()).ok();
+            });
     }
 }
