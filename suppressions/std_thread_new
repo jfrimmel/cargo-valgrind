@@ -1,0 +1,67 @@
+{
+   std::thread::new() in Rust 1.84+
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_ZN3std6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:_ZN3std4sync4mpmc7context7Context3new*
+   fun:_ZN3std3sys12thread_local6native4lazy20Storage*
+   fun:_ZN3std4sync4mpmc4list16Channel$LT$T$GT$4recv*
+}
+{
+   std::thread::new() in Rust 1.93+
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_ZN3std6thread6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:_ZN3std4sync4mpmc7context7Context3new*
+   fun:_ZN3std3sys12thread_local6native4lazy20Storage*get_or_init_slow*
+   fun:_ZN3std4sync4mpmc4list16Channel*
+}
+{
+   std::thread::new() in Rust 1.86+
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:alloc
+   fun:alloc_impl
+   fun:allocate
+   fun:{closure#0}<std::thread::Inner>
+   fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>, alloc::sync::{impl#*}::new_uninit::{closure_env#0}<std::thread::Inner>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::Inner>>>
+   fun:new_uninit<std::thread::Inner>
+   fun:_ZN3std6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:current_or_unnamed
+}
+{
+   std::thread::new() in Rust 1.93+ (v0-mangled)
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:alloc
+   fun:alloc_impl
+   fun:allocate
+   fun:{closure#0}<std::thread::thread::Inner, std::alloc::System>
+   fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>, alloc::sync::{impl#*}::new_uninit_in::{closure_env#0}<std::thread::thread::Inner, std::alloc::System>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>>>
+   fun:new_uninit_in<std::thread::thread::Inner, std::alloc::System>
+   fun:_RNvMs_NtNtCs*_3std6thread6threadNtB4_6Thread3new
+   fun:_RNvNtNtCs*_3std6thread7current12init_current
+   fun:current_or_unnamed
+}
+{
+   std::thread::new() in Rust 1.93+ (C++-mangled)
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:alloc
+   fun:alloc_impl
+   fun:allocate
+   fun:{closure#0}<std::thread::thread::Inner, std::alloc::System>
+   fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>, alloc::sync::{impl#17}::new_uninit_in::{closure_env#0}<std::thread::thread::Inner, std::alloc::System>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>>>
+   fun:new_uninit_in<std::thread::thread::Inner, std::alloc::System>
+   fun:_ZN3std6thread6thread6Thread3new*
+   fun:_ZN3std6thread7current12init_current*
+   fun:current_or_unnamed
+}
