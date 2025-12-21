@@ -19,7 +19,7 @@ default = ["textwrap"]
 serde = { version = "1", features = ["derive"] }
 serde-xml-rs = { version = "0.5", default-features = false }
 colored = "1.9.4"
-bytesize = "1"
+bytesize = "2"
 textwrap = { version = "0.14", optional = true, features = ["terminal_size"] }
 temp-file = "0.1.9"
 
