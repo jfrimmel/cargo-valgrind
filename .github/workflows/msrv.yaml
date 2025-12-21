@@ -4,7 +4,7 @@ on:
   pull_request:
 env:
   CARGO_TERM_COLOR: always
-  MSRV: "1.58.1"
+  MSRV: "1.74"
 jobs:
   # Build and test the tool with the Minimum Supported Rust Version
   msrv:

@@ -3,7 +3,7 @@ name = "cargo-valgrind"
 version = "2.4.0"
 authors = ["Julian Frimmel <julian.frimmel@gmail.com>"]
 edition = "2018"
-rust-version = "1.58.1"
+rust-version = "1.74"
 description = "A cargo subcommand for running valgrind"
 repository = "https://github.com/jfrimmel/cargo-valgrind"
 readme = "README.md"
@@ -24,7 +24,7 @@ textwrap = { version = "0.14", optional = true, features = ["terminal_size"] }
 temp-file = "0.1.9"
 
 [dev-dependencies]
-assert_cmd = "2"
+assert_cmd = "2.1"
 predicates = "2"
 
 [profile.release]
