@@ -1,6 +1,9 @@
 # Changelog
 
 ## unreleased
+- Fix potential future breakage around [`assert_cmd::Command::cargo_bin()`](https://docs.rs/assert_cmd/2.1.0/assert_cmd/cargo/fn.cargo_bin.html)
+- Raised MSRV to 1.74 (due to above fix)
+- bump dependencies
 
 ## Version 2.4.0
 - support Valgrind 3.26+ (with new XML protocol version 6)

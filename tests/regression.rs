@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 
 fn cargo_valgrind() -> Command {
-    let mut cmd = Command::cargo_bin("cargo-valgrind").unwrap();
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cargo-valgrind");
     cmd.arg("valgrind");
     cmd
 }

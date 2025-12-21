@@ -17,7 +17,7 @@ pub fn display_errors(errors: &[valgrind::xml::Error]) {
     eprintln!(
         "{:>12} Leaked {} total ({} other errors)",
         "Summary".red().bold(),
-        bytesize::to_string(total as _, true),
+        bytesize::ByteSize::b(total as _),
         errors.iter().filter(|e| !e.kind.is_leak()).count()
     );
 }
@@ -27,7 +27,7 @@ fn display_leak(error: &valgrind::xml::Error) {
     eprintln!(
         "{:>12} leaked {} in {} block{}",
         "Error".red().bold(),
-        bytesize::to_string(error.resources.bytes as _, true),
+        bytesize::ByteSize::b(error.resources.bytes as _),
         error.resources.blocks,
         if error.resources.blocks == 1 { "" } else { "s" }
     );
