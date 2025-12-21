@@ -39,7 +39,7 @@ pub fn driver() -> io::Result<ExitStatus> {
     // `rustc -vV` in that case.
     let host = search_for_host(Command::new(&cargo).arg("version").arg("-v"))
         .or_else(|| search_for_host(Command::new(rustc).arg("rustc").arg("-vV")))
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "could not determine host"))?;
+        .ok_or_else(|| io::Error::other("could not determine host"))?;
 
     /* convert to runner env variable */
     let host = host.replace(['-', '.'], "_").to_uppercase();

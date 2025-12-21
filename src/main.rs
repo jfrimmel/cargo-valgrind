@@ -31,7 +31,7 @@ fn main() {
 
     let number_of_arguments = || env::args_os().skip(1).count();
     let help_requested = || env::args_os().any(|arg| arg == "--help" || arg == "-h");
-    let is_cargo_subcommand = || env::args_os().nth(1).map_or(false, |arg| arg == "valgrind");
+    let is_cargo_subcommand = || env::args_os().nth(1).is_some_and(|arg| arg == "valgrind");
     if number_of_arguments() == 0 || help_requested() {
         let text = format!(
             "cargo valgrind {version}\n\

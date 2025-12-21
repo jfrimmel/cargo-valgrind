@@ -21,7 +21,7 @@ fn search_suppressions() -> impl Iterator<Item = String> {
     fs::read_dir(SUPPRESSIONS_DIR)
         .expect("could not find the suppression directory")
         .filter_map(|entry| entry.ok())
-        .filter(|path| path.file_type().map_or(false, |path| path.is_file()))
+        .filter(|path| path.file_type().is_ok_and(|path| path.is_file()))
         .filter(|file| file.file_name() != "README.md")
         .map(|file| file.path())
         .filter_map(|path| fs::read_to_string(path).ok())
