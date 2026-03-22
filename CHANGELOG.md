@@ -1,6 +1,8 @@
 # Changelog
 
 ## unreleased
+
+## Version 2.4.1
 - Fix potential future breakage around [`assert_cmd::Command::cargo_bin()`](https://docs.rs/assert_cmd/2.1.0/assert_cmd/cargo/fn.cargo_bin.html)
 - unify and simplify standard library suppression files for `std::thread` ([#147](https://github.com/jfrimmel/cargo-valgrind/pull/147))
 - Raised MSRV to 1.74 (due to above fix)
