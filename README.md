@@ -108,7 +108,7 @@ This will install the latest official released version.
 
 If you want to use the latest changes, that were not yet published to `crates.io`, you can install the binary from the git-repository like this:
 ```bash
-$ cargo install --git https://github.com/jfrimmel/cargo-valgrind
+$ cargo install --git https://github.com/jfrimmel/cargo-valgrind cargo-valgrind
 ```
 
 # License
